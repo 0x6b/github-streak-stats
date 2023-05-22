@@ -1,0 +1,15 @@
+query StreakQuery($login: String!, $from: DateTime, $to: DateTime) {
+    user(login: $login) {
+        createdAt
+        contributionsCollection(from: $from, to: $to) {
+            contributionCalendar {
+                weeks {
+                    contributionDays {
+                        contributionCount
+                        date
+                    }
+                }
+            }
+        }
+    }
+}

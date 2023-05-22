@@ -1,0 +1,9 @@
+schema: graphql/schema.graphql
+extensions:
+  endpoints:
+    GitHub GraphQL API Public Schema:
+      url: https://api.github.com/graphql
+      headers:
+        user-agent: JS GraphQL
+        authorization: Bearer ${GITHUB_TOKEN}
+      introspect: false
