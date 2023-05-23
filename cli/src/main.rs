@@ -44,9 +44,9 @@ fn main() {
 
     println!(
         r#"🔥 GitHub contribution stats for {} since {} 🔥
-- Total contributions: {}
-- Longest streak: {} days ({}–{})
-- Current streak: {} days ({}–{})"#,
+Total contributions       | {}
+Longest and latest streak | {} days, from {} to {}
+Current streak            | {} days, from {} to {}"#,
         login,
         start.split('T').collect::<Vec<&str>>()[0],
         total_contributions,
