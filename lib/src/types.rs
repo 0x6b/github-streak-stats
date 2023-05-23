@@ -7,10 +7,10 @@ type Date = String;
 
 #[derive(GraphQLQuery)]
 #[graphql(
-schema_path = "graphql/schema.graphql",
-query_path = "graphql/streak.graphql",
-response_derives = "Debug",
-variables_derives = "Debug"
+    schema_path = "graphql/schema.graphql",
+    query_path = "graphql/streak.graphql",
+    response_derives = "Debug",
+    variables_derives = "Debug"
 )]
 pub struct StreakQuery;
 

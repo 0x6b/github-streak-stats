@@ -1,7 +1,10 @@
 use structopt::StructOpt;
 
 #[derive(StructOpt, Debug)]
-#[structopt(name = "github-streak-stats", about = "Show GitHub contribution streak")]
+#[structopt(
+    name = "github-streak-stats",
+    about = "Show GitHub contribution streak"
+)]
 pub struct Args {
     /// GitHub login name
     #[structopt()]
