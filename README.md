@@ -8,7 +8,9 @@ Simple CLI to show GitHub contribution streak for specified user.
 $ cargo install --git https://github.com/0x6b/github-streak-stats github-streak-stats-cli
 ```
 
-Set `GITHUB_TOKEN` environment variable to your GitHub personal access token.
+## Setup
+
+Export `GITHUB_TOKEN` environment variable with your GitHub personal access token which has `read:user` scope.
 
 ## Usage
 
