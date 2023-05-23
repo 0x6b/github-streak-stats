@@ -43,3 +43,11 @@ OPTIONS:
 ARGS:
     <login>    GitHub login name
 ```
+
+## License
+
+MIT. See [LICENSE](LICENSE) for details.
+
+## Reference
+
+- [Creating a personal access token - GitHub Docs](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
