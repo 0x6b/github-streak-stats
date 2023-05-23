@@ -12,12 +12,14 @@ use reqwest::{
 
 use crate::types::{Contribution, Stats, streak_query, StreakQuery};
 
+/// Simple GitHub client
 #[derive(Debug)]
 pub struct GitHubClient {
     endpoint: String,
     client: Client,
 }
 
+// for my own use case, only default implementation is needed at this moment
 impl Default for GitHubClient {
     fn default() -> Self {
         let token = env::var("GITHUB_TOKEN")
@@ -40,12 +42,8 @@ impl Default for GitHubClient {
 }
 
 impl GitHubClient {
-    pub fn calc_streak(
-        &self,
-        login: &str,
-        from: &str,
-        to: &str,
-    ) -> Result<Stats, Box<dyn Error>> {
+    /// Calculate streak stats for a given user
+    pub fn calc_streak(&self, login: &str, from: &str, to: &str) -> Result<Stats, Box<dyn Error>> {
         let contribution_days = self.get_streak(login, from, to).unwrap();
         let mut longest_streak = 0;
         let mut current_streak = 0;
@@ -85,6 +83,7 @@ impl GitHubClient {
         })
     }
 
+    /// Get streak for a given user
     pub fn get_streak(
         &self,
         login: &str,
@@ -116,6 +115,7 @@ impl GitHubClient {
         Ok(contribution_days)
     }
 
+    // Simple helper function to make a request
     fn request<T: GraphQLQuery>(
         &self,
         variables: T::Variables,
