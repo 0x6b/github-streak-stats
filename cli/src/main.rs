@@ -2,26 +2,17 @@ use std::ops::Sub;
 
 use structopt::StructOpt;
 
-use github_streak_stats_lib::GitHubClient;
+use github_streak_stats_lib::{
+    github_client::GitHubClient,
+    types::Stats,
+};
 
-#[derive(StructOpt, Debug)]
-#[structopt(name = "github-streak-stats", about = "Show GitHub contribution streak")]
-struct Args {
-    /// GitHub login name
-    #[structopt()]
-    login: String,
+use crate::types::Args;
 
-    /// Start date
-    #[structopt(short, long)]
-    from: Option<String>,
-
-    /// End date. Please note that the total time spanned by 'from' and 'to' must not exceed 1 year
-    #[structopt(short, long)]
-    to: Option<String>,
-}
+mod types;
 
 fn main() {
-    let Args { login, from, to } = Args::from_args();
+    let Args { login, from, to, debug } = Args::from_args();
 
     let start = format!(
         "{}T00:00:00.000+09:00",
@@ -40,7 +31,14 @@ fn main() {
         })
     );
 
-    let (total, longest, current) = GitHubClient::default()
+    let client = GitHubClient::default();
+
+    if debug {
+        println!("args: {:#?}", Args::from_args());
+        println!("{:#?}", client.get_streak(&login, &start, &end).unwrap());
+    }
+
+    let Stats { total_contributions, longest_streak, current_streak } = client
         .calc_streak(&login, &start, &end)
         .unwrap();
 
@@ -51,12 +49,12 @@ fn main() {
 - Current streak: {} days ({}–{})"#,
         login,
         start.split('T').collect::<Vec<&str>>()[0],
-        total,
-        (longest.1 - longest.0).num_days() + 1,
-        longest.0,
-        longest.1,
-        (current.1 - current.0).num_days() + 1,
-        current.0,
-        current.1
+        total_contributions,
+        (longest_streak.end - longest_streak.start).num_days() + 1,
+        longest_streak.start,
+        longest_streak.end,
+        (current_streak.end - current_streak.start).num_days() + 1,
+        current_streak.start,
+        current_streak.end,
     );
 }
