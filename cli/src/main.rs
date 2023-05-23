@@ -32,11 +32,12 @@ fn main() {
             Some(date) => date,
         })
     );
-
     let client = GitHubClient::default();
 
     if debug {
         println!("args: {:#?}", Args::from_args());
+        println!("start: {}", start);
+        println!("end: {}", end);
         println!("{:#?}", client.get_streak(&login, &start, &end).unwrap());
     }
 
