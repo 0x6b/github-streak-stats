@@ -64,6 +64,11 @@ impl GitHubClient {
                     longest_streak_end = c.date;
                     longest_streak_start = c.date - chrono::Duration::days(current_streak - 1);
                 }
+                if current_streak == longest_streak {
+                    longest_streak = current_streak;
+                    longest_streak_end = c.date;
+                    longest_streak_start = c.date - chrono::Duration::days(current_streak - 1);
+                }
                 if current_streak == 1 {
                     current_streak_start = c.date;
                 }
