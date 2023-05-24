@@ -57,12 +57,7 @@ impl GitHubClient {
             if c.contribution_count > 0 {
                 total_contributions += c.contribution_count;
                 current_streak += 1;
-                if current_streak > longest_streak {
-                    longest_streak = current_streak;
-                    longest_streak_end = c.date;
-                    longest_streak_start = c.date - chrono::Duration::days(current_streak - 1);
-                }
-                if current_streak == longest_streak {
+                if current_streak >= longest_streak {
                     longest_streak = current_streak;
                     longest_streak_end = c.date;
                     longest_streak_start = c.date - chrono::Duration::days(current_streak - 1);
