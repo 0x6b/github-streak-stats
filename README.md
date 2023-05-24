@@ -16,10 +16,10 @@ Export `GITHUB_TOKEN` environment variable with your GitHub personal access toke
 
 ```console
 $ github-streak-stats 0x6b
-🔥 GitHub contribution stats for 0x6b since 2022-05-22 🔥
-- Total contributions: 585
-- Longest streak: 30 days (2023-04-23–2023-05-22)
-- Current streak: 30 days (2023-04-23–2023-05-22)
+🔥 GitHub contribution stats for https://github.com/0x6b since 2022-05-24 🔥
+Total contributions       | 612
+Longest and latest streak | 32 days, from 2023-04-23 to 2023-05-24
+Current streak            | 32 days, from 2023-04-23 to 2023-05-24
 ```
 
 See help for detail.

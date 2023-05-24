@@ -19,6 +19,6 @@ pub struct Args {
     pub to: Option<String>,
 
     /// Debug mode
-    #[structopt(short, long)]
+    #[structopt(short, long, hidden = true)]
     pub debug: bool,
 }

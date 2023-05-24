@@ -4,9 +4,9 @@ use structopt::StructOpt;
 
 use github_streak_stats_lib::{github_client::GitHubClient, types::Stats};
 
-use crate::types::Args;
+use crate::args::Args;
 
-mod types;
+mod args;
 
 fn main() {
     let Args {
