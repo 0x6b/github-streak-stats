@@ -48,7 +48,7 @@ fn main() {
     } = client.calc_streak(&login, &start, &end).unwrap();
 
     println!(
-        r#"🔥 GitHub contribution stats for {} since {} 🔥
+        r#"🔥 GitHub contribution stats for https://github.com/{} since {} 🔥
 Total contributions       | {}
 Longest and latest streak | {} days, from {} to {}
 Current streak            | {} days, from {} to {}"#,
