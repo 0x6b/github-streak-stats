@@ -1,6 +1,6 @@
 use std::ops::Sub;
 
-use structopt::StructOpt;
+use clap::Parser;
 
 use github_streak_stats_lib::{github_client::GitHubClient, types::Stats};
 
@@ -13,29 +13,35 @@ fn main() {
         login,
         from,
         to,
+        offset,
         debug,
-    } = Args::from_args();
+    } = Args::parse();
 
+    let today = chrono::Local::now();
     let start = format!(
-        "{}T00:00:00.000+09:00",
+        "{}T00:00:00.000+{}",
         &(match from {
-            None => (chrono::Local::now().sub(chrono::Duration::days(365)))
+            None => today
+                .sub(chrono::Duration::days(365))
                 .format("%Y-%m-%d")
                 .to_string(),
             Some(date) => date,
-        })
+        }),
+        offset,
     );
     let end = format!(
-        "{}T00:00:00.000+09:00",
+        "{}T00:00:00.000+{}",
         &(match to {
-            None => chrono::Local::now().format("%Y-%m-%d").to_string(),
+            None => today.format("%Y-%m-%d").to_string(),
             Some(date) => date,
-        })
+        }),
+        offset,
     );
+
     let client = GitHubClient::default();
 
     if debug {
-        println!("args: {:#?}", Args::from_args());
+        println!("args: {:#?}", Args::parse());
         println!("start: {}", start);
         println!("end: {}", end);
         println!("{:#?}", client.get_streak(&login, &start, &end).unwrap());

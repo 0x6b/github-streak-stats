@@ -26,22 +26,19 @@ See help for detail.
 
 ```
 $ github-streak-stats -h
-github-streak-stats 0.1.0
 Show GitHub contribution streak
 
-USAGE:
-    github-streak-stats [OPTIONS] <login>
+Usage: github-streak-stats [OPTIONS] <LOGIN>
 
-FLAGS:
-    -h, --help       Prints help information
-    -V, --version    Prints version information
+Arguments:
+  <LOGIN>  GitHub login name
 
-OPTIONS:
-    -f, --from <from>    Start date
-    -t, --to <to>        End date. Please note that the total time spanned by 'from' and 'to' must not exceed 1 year
-
-ARGS:
-    <login>    GitHub login name
+Options:
+  -f, --from <FROM>      Start date, in YYYY-MM-DD format. Defaults is 1 year ago from today
+  -t, --to <TO>          End date, in YYYY-MM-DD format. Please note that the total time spanned by 'from' and 'to' must not exceed 1 year. Defaults is today
+  -o, --offset <OFFSET>  Offset from UTC, in HH:MM format [default: 09:00]
+  -h, --help             Print help
+  -V, --version          Print version
 ```
 
 ## License

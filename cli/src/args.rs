@@ -1,24 +1,30 @@
-use structopt::StructOpt;
+use clap::Parser;
 
-#[derive(StructOpt, Debug)]
-#[structopt(
+#[derive(Parser, Debug)]
+#[command(
     name = "github-streak-stats",
-    about = "Show GitHub contribution streak"
+    about = "Show GitHub contribution streak",
+    version
 )]
 pub struct Args {
     /// GitHub login name
-    #[structopt()]
+    #[arg()]
     pub login: String,
 
-    /// Start date
-    #[structopt(short, long)]
+    /// Start date, in YYYY-MM-DD format. Defaults is 1 year ago from today.
+    #[arg(short, long)]
     pub from: Option<String>,
 
-    /// End date. Please note that the total time spanned by 'from' and 'to' must not exceed 1 year
-    #[structopt(short, long)]
+    /// End date, in YYYY-MM-DD format. Please note that the total time spanned by 'from' and 'to'
+    /// must not exceed 1 year. Defaults is today.
+    #[arg(short, long)]
     pub to: Option<String>,
 
+    /// Offset from UTC, in HH:MM format
+    #[arg(short, long, default_value = "09:00")]
+    pub offset: String,
+
     /// Debug mode
-    #[structopt(short, long, hidden = true)]
+    #[arg(short, long, hide = true)]
     pub debug: bool,
 }
