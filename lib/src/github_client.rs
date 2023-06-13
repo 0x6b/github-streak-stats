@@ -2,15 +2,15 @@ use std::{env, error::Error};
 
 use chrono::NaiveDate;
 use graphql_client::{
-    {GraphQLQuery, Response},
     reqwest::post_graphql_blocking,
+    {GraphQLQuery, Response},
 };
 use reqwest::{
     blocking::Client,
-    header::{AUTHORIZATION, HeaderValue},
+    header::{HeaderValue, AUTHORIZATION},
 };
 
-use crate::types::{Contribution, Stats, streak_query, StreakQuery};
+use crate::types::{streak_query, Contribution, Stats, StreakQuery};
 
 /// Simple GitHub client
 #[derive(Debug)]
@@ -33,7 +33,7 @@ impl Default for GitHubClient {
                         AUTHORIZATION,
                         HeaderValue::from_str(&format!("Bearer {}", token)).unwrap(),
                     ))
-                        .collect(),
+                    .collect(),
                 )
                 .build()
                 .unwrap(),

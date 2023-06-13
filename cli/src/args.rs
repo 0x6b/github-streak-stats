@@ -10,11 +10,12 @@ pub struct Args {
     #[structopt()]
     pub login: String,
 
-    /// Start date
+    /// Start date, in YYYY-MM-DD format
     #[structopt(short, long)]
     pub from: Option<String>,
 
-    /// End date. Please note that the total time spanned by 'from' and 'to' must not exceed 1 year
+    /// End date, in YYYY-MM-DD format. Please note that the total time spanned by 'from' and 'to'
+    /// must not exceed 1 year
     #[structopt(short, long)]
     pub to: Option<String>,
 

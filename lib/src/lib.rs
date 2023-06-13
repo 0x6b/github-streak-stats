@@ -1,2 +1,2 @@
-pub mod types;
 pub mod github_client;
+pub mod types;

@@ -269,7 +269,7 @@ dependencies = [
 
 [[package]]
 name = "github-streak-stats-cli"
-version = "0.1.0"
+version = "1.0.0"
 dependencies = [
  "chrono",
  "github-streak-stats-lib",
