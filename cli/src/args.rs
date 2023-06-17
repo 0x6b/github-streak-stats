@@ -3,13 +3,13 @@ use clap::Parser;
 #[derive(Parser, Debug)]
 #[command(
     name = "github-streak-stats",
-    about = "Show GitHub contribution streak",
+    about = "Show GitHub contribution streak. Export `GITHUB_TOKEN` environment variable with your GitHub personal access token which has `read:user` scope.",
     version
 )]
 pub struct Args {
-    /// GitHub login name
+    /// GitHub login name. Defaults to the login name of the GitHub API token owner.
     #[arg()]
-    pub login: String,
+    pub login: Option<String>,
 
     /// Start date, in YYYY-MM-DD format. Defaults is 1 year ago from today.
     #[arg(short, long)]
