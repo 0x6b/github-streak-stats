@@ -2,15 +2,15 @@ use std::{env, error::Error};
 
 use chrono::NaiveDate;
 use graphql_client::{
-    reqwest::post_graphql_blocking,
     {GraphQLQuery, Response},
+    reqwest::post_graphql_blocking,
 };
 use reqwest::{
     blocking::Client,
-    header::{HeaderValue, AUTHORIZATION},
+    header::{AUTHORIZATION, HeaderValue},
 };
 
-use crate::types::{streak_query, Contribution, Stats, StreakQuery};
+use crate::types::{Contribution, Stats, streak_query, StreakQuery, viewer_query, ViewerQuery};
 
 /// Simple GitHub client
 #[derive(Debug)]
@@ -33,7 +33,7 @@ impl Default for GitHubClient {
                         AUTHORIZATION,
                         HeaderValue::from_str(&format!("Bearer {}", token)).unwrap(),
                     ))
-                    .collect(),
+                        .collect(),
                 )
                 .build()
                 .unwrap(),
@@ -110,6 +110,12 @@ impl GitHubClient {
         Ok(contribution_days)
     }
 
+    /// Get login name of the GitHub API token owner
+    pub fn get_viewer(&self) -> Result<String, Box<dyn Error>> {
+        let response = self.request::<ViewerQuery>(viewer_query::Variables {})?;
+        Ok(response.data.ok_or("No login information. Check your GitHub API token.")?.viewer.login)
+    }
+
     // Simple helper function to make a request
     fn request<T: GraphQLQuery>(
         &self,
@@ -120,5 +126,17 @@ impl GitHubClient {
             &self.endpoint,
             variables,
         )?)
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use crate::github_client::GitHubClient;
+
+    #[test]
+    fn get_viewer() {
+        let client = GitHubClient::default();
+        let viewer = client.get_viewer().unwrap();
+        println!("{}", viewer);
     }
 }
