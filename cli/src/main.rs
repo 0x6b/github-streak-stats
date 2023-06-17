@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::ops::Sub;
 
 use clap::Parser;
@@ -8,7 +9,7 @@ use crate::args::Args;
 
 mod args;
 
-fn main() {
+fn main() -> Result<(), Box<dyn Error>> {
     let Args {
         login,
         from,
@@ -40,18 +41,23 @@ fn main() {
 
     let client = GitHubClient::default();
 
+    let login = match login {
+        None => client.get_viewer()?,
+        Some(login) => login,
+    };
+
     if debug {
         println!("args: {:#?}", Args::parse());
         println!("start: {}", start);
         println!("end: {}", end);
-        println!("{:#?}", client.get_streak(&login, &start, &end).unwrap());
+        println!("{:#?}", client.get_streak(&login, &start, &end)?);
     }
 
     let Stats {
         total_contributions,
         longest_streak,
         current_streak,
-    } = client.calc_streak(&login, &start, &end).unwrap();
+    } = client.calc_streak(&login, &start, &end)?;
 
     println!(
         r#"🔥 GitHub contribution stats for https://github.com/{} since {} 🔥
@@ -68,4 +74,6 @@ Current streak            | {} days, from {} to {}"#,
         current_streak.start,
         current_streak.end,
     );
+
+    Ok(())
 }

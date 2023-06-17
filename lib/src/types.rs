@@ -14,6 +14,15 @@ type Date = String;
 )]
 pub struct StreakQuery;
 
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "graphql/schema.graphql",
+    query_path = "graphql/viewer.graphql",
+    response_derives = "Debug",
+    variables_derives = "Debug"
+)]
+pub struct ViewerQuery;
+
 /// Struct to hold the response from the streak query
 #[derive(Debug)]
 pub struct Contribution {
