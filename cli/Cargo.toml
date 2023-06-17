@@ -1,6 +1,6 @@
 [package]
 name = "github-streak-stats-cli"
-version = "1.2.0"
+version = "1.2.1"
 edition = "2021"
 
 [[bin]]
@@ -8,6 +8,6 @@ name = "github-streak-stats"
 path = "src/main.rs"
 
 [dependencies]
-chrono = "0.4.24"
-clap = { version = "4.3.0", features = ["derive"] }
-github-streak-stats-lib = { version = "0.1.0", path = "../lib" }
+chrono = "0.4.26"
+clap = { version = "4.3.4", features = ["derive"] }
+github-streak-stats-lib = { version = "0.2.0", path = "../lib" }
