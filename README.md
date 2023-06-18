@@ -26,12 +26,12 @@ See help for detail.
 
 ```
 $ github-streak-stats -h
-Show GitHub contribution streak
+Show GitHub contribution streak. Export `GITHUB_TOKEN` environment variable with your GitHub personal access token which has `read:user` scope.
 
-Usage: github-streak-stats [OPTIONS] <LOGIN>
+Usage: github-streak-stats [OPTIONS] [LOGIN]
 
 Arguments:
-  <LOGIN>  GitHub login name
+  [LOGIN]  GitHub login name. Defaults to the login name of the GitHub API token owner
 
 Options:
   -f, --from <FROM>      Start date, in YYYY-MM-DD format. Defaults is 1 year ago from today
