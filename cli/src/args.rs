@@ -1,11 +1,7 @@
 use clap::Parser;
 
 #[derive(Parser, Debug)]
-#[command(
-    name = "github-streak-stats",
-    about = "Show GitHub contribution streak. Export `GITHUB_TOKEN` environment variable with your GitHub personal access token which has `read:user` scope.",
-    version
-)]
+#[clap(about, version)]
 pub struct Args {
     /// GitHub login name. Defaults to the login name of the GitHub API token owner.
     #[arg()]
