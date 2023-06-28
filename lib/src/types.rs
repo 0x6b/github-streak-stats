@@ -5,6 +5,8 @@ use graphql_client::GraphQLQuery;
 type DateTime = String;
 type Date = String;
 
+/// Struct to hold the response from the contributionsCollection query
+/// https://docs.github.com/en/graphql/reference/objects#contributionscollection
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "graphql/schema.graphql",
@@ -14,6 +16,8 @@ type Date = String;
 )]
 pub struct StreakQuery;
 
+/// Struct to hold the response from the viewer query
+/// https://docs.github.com/en/graphql/reference/queries#viewer
 #[derive(GraphQLQuery)]
 #[graphql(
     schema_path = "graphql/schema.graphql",
@@ -26,20 +30,27 @@ pub struct ViewerQuery;
 /// Struct to hold the response from the streak query
 #[derive(Debug)]
 pub struct Contribution {
+    /// Date of the contribution
     pub date: NaiveDate,
+    /// Number of contributions on that date
     pub contribution_count: i64,
 }
 
 /// Stats of the user
 pub struct Stats {
+    /// Total contributions
     pub total_contributions: i64,
+    /// Longest streak
     pub longest_streak: Streak,
+    /// Current streak
     pub current_streak: Streak,
 }
 
 /// Simple date range
 pub struct Streak {
+    /// Start date
     pub start: NaiveDate,
+    /// End date
     pub end: NaiveDate,
 }
 

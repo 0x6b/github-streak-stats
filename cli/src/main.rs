@@ -1,7 +1,11 @@
-use std::error::Error;
-use std::ops::Sub;
+use std::{error::Error, ops::Sub};
 
 use clap::Parser;
+use term_table::{
+    row::Row,
+    table_cell::{Alignment, TableCell},
+    TableBuilder, TableStyle,
+};
 
 use github_streak_stats_lib::{github_client::GitHubClient, types::Stats};
 
@@ -59,21 +63,43 @@ fn main() -> Result<(), Box<dyn Error>> {
         current_streak,
     } = client.calc_streak(&login, &start, &end)?;
 
-    println!(
-        r#"🔥 GitHub contribution stats for https://github.com/{} since {} 🔥
-Total contributions       | {}
-Longest and latest streak | {} days, from {} to {}
-Current streak            | {} days, from {} to {}"#,
-        login,
-        start.split('T').collect::<Vec<&str>>()[0],
-        total_contributions,
-        (longest_streak.end - longest_streak.start).num_days() + 1,
-        longest_streak.start,
-        longest_streak.end,
-        (current_streak.end - current_streak.start).num_days() + 1,
-        current_streak.start,
-        current_streak.end,
-    );
+    let table = TableBuilder::new()
+        .style(TableStyle::rounded())
+        .rows(vec![
+            Row::new(vec![TableCell::new_with_alignment(
+                format!(
+                    "🔥 GitHub contribution stats for https://github.com/{} since {} 🔥",
+                    login,
+                    start.split('T').collect::<Vec<&str>>()[0]
+                ),
+                2,
+                Alignment::Center,
+            )]),
+            Row::new(vec![
+                TableCell::new("Total contributions"),
+                TableCell::new_with_alignment(total_contributions, 1, Alignment::Right),
+            ]),
+            Row::new(vec![
+                TableCell::new("Longest and latest streak"),
+                TableCell::new(format!(
+                    "{} days, from {} to {}",
+                    (longest_streak.end - longest_streak.start).num_days() + 1,
+                    longest_streak.start,
+                    longest_streak.end,
+                )),
+            ]),
+            Row::new(vec![
+                TableCell::new("Current streak"),
+                TableCell::new(format!(
+                    "{} days, from {} to {}",
+                    (current_streak.end - current_streak.start).num_days() + 1,
+                    current_streak.start,
+                    current_streak.end,
+                )),
+            ]),
+        ])
+        .build();
+    println!("{}", table.render());
 
     Ok(())
 }

@@ -15,7 +15,7 @@ Export `GITHUB_TOKEN` environment variable with your GitHub personal access toke
 ## Usage
 
 ```console
-$ github-streak-stats 0x6b
+$ github-streak-stats
 🔥 GitHub contribution stats for https://github.com/0x6b since 2022-05-24 🔥
 Total contributions       | 612
 Longest and latest streak | 32 days, from 2023-04-23 to 2023-05-24
