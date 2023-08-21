@@ -2,15 +2,18 @@ use std::{env, error::Error};
 
 use chrono::NaiveDate;
 use graphql_client::{
-    {GraphQLQuery, Response},
     reqwest::post_graphql_blocking,
+    {GraphQLQuery, Response},
 };
 use reqwest::{
     blocking::Client,
-    header::{AUTHORIZATION, HeaderValue},
+    header::{HeaderValue, AUTHORIZATION},
 };
 
-use crate::types::{Contribution, Stats, streak_query, StreakQuery, viewer_query, ViewerQuery};
+use crate::types::{
+    streak_query, user_query, viewer_query, Contribution, Stats, StreakQuery, User, UserQuery,
+    ViewerQuery,
+};
 
 /// Simple GitHub client
 #[derive(Debug)]
@@ -33,7 +36,7 @@ impl Default for GitHubClient {
                         AUTHORIZATION,
                         HeaderValue::from_str(&format!("Bearer {}", token)).unwrap(),
                     ))
-                        .collect(),
+                    .collect(),
                 )
                 .build()
                 .unwrap(),
@@ -43,7 +46,7 @@ impl Default for GitHubClient {
 
 impl GitHubClient {
     /// Calculate streak stats for a given user
-    pub fn calc_streak(&self, login: &str, from: &str, to: &str) -> Result<Stats, Box<dyn Error>> {
+    pub fn calc_streak(&self, login: &User, from: &str, to: &str) -> Result<Stats, Box<dyn Error>> {
         let contribution_days = self.get_streak(login, from, to).unwrap();
         let mut longest_streak = 0;
         let mut current_streak = 0;
@@ -81,12 +84,12 @@ impl GitHubClient {
     /// Get streak for a given user
     pub fn get_streak(
         &self,
-        login: &str,
+        user: &User,
         from: &str,
         to: &str,
     ) -> Result<Vec<Contribution>, Box<dyn Error>> {
         let response = self.request::<StreakQuery>(streak_query::Variables {
-            login: login.to_string(),
+            login: user.name.to_string(),
             from: Some(from.to_string()),
             to: Some(to.to_string()),
         })?;
@@ -110,10 +113,36 @@ impl GitHubClient {
         Ok(contribution_days)
     }
 
+    pub fn get_user(&self, login: &str) -> Result<User, Box<dyn Error>> {
+        let response = self
+            .request::<UserQuery>(user_query::Variables {
+                login: login.to_string(),
+            })?
+            .data
+            .ok_or("No login information. Check your GitHub API token.")?
+            .user
+            .ok_or("No such user")?;
+
+        let login = response.login;
+        let public_repositories = response.repositories.total_count;
+        Ok(User {
+            name: login,
+            public_repositories,
+        })
+    }
+
     /// Get login name of the GitHub API token owner
-    pub fn get_viewer(&self) -> Result<String, Box<dyn Error>> {
-        let response = self.request::<ViewerQuery>(viewer_query::Variables {})?;
-        Ok(response.data.ok_or("No login information. Check your GitHub API token.")?.viewer.login)
+    pub fn get_viewer(&self) -> Result<User, Box<dyn Error>> {
+        let response = self
+            .request::<ViewerQuery>(viewer_query::Variables {})?
+            .data
+            .ok_or("No login information. Check your GitHub API token.")?;
+        let login = response.viewer.login;
+        let public_repositories = response.viewer.repositories.total_count;
+        Ok(User {
+            name: login,
+            public_repositories,
+        })
     }
 
     // Simple helper function to make a request
@@ -136,7 +165,7 @@ mod test {
     #[test]
     fn get_viewer() {
         let client = GitHubClient::default();
-        let viewer = client.get_viewer().unwrap();
-        println!("{}", viewer);
+        let user = client.get_viewer().unwrap();
+        println!("{user}");
     }
 }

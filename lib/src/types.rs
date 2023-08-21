@@ -1,5 +1,6 @@
 use chrono::NaiveDate;
 use graphql_client::GraphQLQuery;
+use std::fmt::Display;
 
 // Have to define custom type for DateTime and Date as these are not standard type
 type DateTime = String;
@@ -27,6 +28,16 @@ pub struct StreakQuery;
 )]
 pub struct ViewerQuery;
 
+/// Struct to hold the response from the user query
+#[derive(GraphQLQuery)]
+#[graphql(
+    schema_path = "graphql/schema.graphql",
+    query_path = "graphql/user.graphql",
+    response_derives = "Debug",
+    variables_derives = "Debug"
+)]
+pub struct UserQuery;
+
 /// Struct to hold the response from the streak query
 #[derive(Debug)]
 pub struct Contribution {
@@ -44,6 +55,23 @@ pub struct Stats {
     pub longest_streak: Streak,
     /// Current streak
     pub current_streak: Streak,
+}
+
+pub struct User {
+    /// Login name
+    pub name: String,
+    /// Total number of public repositories owned
+    pub public_repositories: i64,
+}
+
+impl Display for User {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{} ({} public repos)",
+            self.name, self.public_repositories
+        )
+    }
 }
 
 /// Simple date range
