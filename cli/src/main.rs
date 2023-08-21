@@ -45,23 +45,23 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let client = GitHubClient::default();
 
-    let login = match login {
+    let user = match login {
         None => client.get_viewer()?,
-        Some(login) => login,
+        Some(login) => client.get_user(&login)?,
     };
 
     if debug {
         println!("args: {:#?}", Args::parse());
         println!("start: {}", start);
         println!("end: {}", end);
-        println!("{:#?}", client.get_streak(&login, &start, &end)?);
+        println!("{:#?}", client.get_streak(&user, &start, &end)?);
     }
 
     let Stats {
         total_contributions,
         longest_streak,
         current_streak,
-    } = client.calc_streak(&login, &start, &end)?;
+    } = client.calc_streak(&user, &start, &end)?;
 
     let table = TableBuilder::new()
         .style(TableStyle::rounded())
@@ -69,12 +69,16 @@ fn main() -> Result<(), Box<dyn Error>> {
             Row::new(vec![TableCell::new_with_alignment(
                 format!(
                     "🔥 GitHub contribution stats for https://github.com/{} since {} 🔥",
-                    login,
+                    user.name,
                     start.split('T').collect::<Vec<&str>>()[0]
                 ),
                 2,
                 Alignment::Center,
             )]),
+            Row::new(vec![
+                TableCell::new("Number of public repositories"),
+                TableCell::new_with_alignment(user.public_repositories, 1, Alignment::Right),
+            ]),
             Row::new(vec![
                 TableCell::new("Total contributions"),
                 TableCell::new_with_alignment(total_contributions, 1, Alignment::Right),
