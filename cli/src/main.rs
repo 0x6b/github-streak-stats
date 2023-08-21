@@ -69,16 +69,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             Row::new(vec![TableCell::new_with_alignment(
                 format!(
                     "🔥 GitHub contribution stats for https://github.com/{} since {} 🔥",
-                    user.name,
+                    user,
                     start.split('T').collect::<Vec<&str>>()[0]
                 ),
                 2,
                 Alignment::Center,
             )]),
-            Row::new(vec![
-                TableCell::new("Number of public repositories"),
-                TableCell::new_with_alignment(user.public_repositories, 1, Alignment::Right),
-            ]),
             Row::new(vec![
                 TableCell::new("Total contributions"),
                 TableCell::new_with_alignment(total_contributions, 1, Alignment::Right),
