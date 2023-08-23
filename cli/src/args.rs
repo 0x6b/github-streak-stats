@@ -20,6 +20,10 @@ pub struct Args {
     #[arg(short, long, default_value = "09:00")]
     pub offset: String,
 
+    /// Display number of public repositories owned
+    #[arg(short = 'r', long)]
+    pub display_public_repositories: bool,
+
     /// Debug mode
     #[arg(short, long, hide = true)]
     pub debug: bool,

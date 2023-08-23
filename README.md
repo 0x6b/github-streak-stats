@@ -17,13 +17,13 @@ Export `GITHUB_TOKEN` environment variable with your GitHub personal access toke
 ```console
 $ github-streak-stats
 ╭─────────────────────────────────────────────────────────────────────────────────────────────────╮
-│  🔥 GitHub contribution stats for https://github.com/0x6b (49 public repos) since 2022-08-21 🔥 │
+│  🔥 GitHub contribution stats for https://github.com/0x6b (49 public repos) since 2022-08-23 🔥 │
 ├────────────────────────────────────────────────┬────────────────────────────────────────────────┤
-│ Total contributions                            │                                           1462 │
+│ Total contributions                            │                                           1507 │
 ├────────────────────────────────────────────────┼────────────────────────────────────────────────┤
-│ Longest and latest streak                      │ 121 days, from 2023-04-23 to 2023-08-21        │
+│ Longest and latest streak                      │ 123 days, from 2023-04-23 to 2023-08-23        │
 ├────────────────────────────────────────────────┼────────────────────────────────────────────────┤
-│ Current streak                                 │ 121 days, from 2023-04-23 to 2023-08-21        │
+│ Current streak                                 │ 123 days, from 2023-04-23 to 2023-08-23        │
 ╰────────────────────────────────────────────────┴────────────────────────────────────────────────╯
 ```
 
@@ -39,11 +39,12 @@ Arguments:
   [LOGIN]  GitHub login name. Defaults to the login name of the GitHub API token owner
 
 Options:
-  -f, --from <FROM>      Start date, in YYYY-MM-DD format. Defaults is 1 year ago from today
-  -t, --to <TO>          End date, in YYYY-MM-DD format. Please note that the total time spanned by 'from' and 'to' must not exceed 1 year. Defaults is today
-  -o, --offset <OFFSET>  Offset from UTC, in HH:MM format [default: 09:00]
-  -h, --help             Print help
-  -V, --version          Print version
+  -f, --from <FROM>                  Start date, in YYYY-MM-DD format. Defaults is 1 year ago from today
+  -t, --to <TO>                      End date, in YYYY-MM-DD format. Please note that the total time spanned by 'from' and 'to' must not exceed 1 year. Defaults is today
+  -o, --offset <OFFSET>              Offset from UTC, in HH:MM format [default: 09:00]
+  -r, --display-public-repositories  Display number of public repositories owned
+  -h, --help                         Print help
+  -V, --version                      Print version
 ```
 
 ## License

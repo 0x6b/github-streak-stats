@@ -19,6 +19,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         from,
         to,
         offset,
+        display_public_repositories,
         debug,
     } = Args::parse();
 
@@ -69,7 +70,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             Row::new(vec![TableCell::new_with_alignment(
                 format!(
                     "🔥 GitHub contribution stats for https://github.com/{} since {} 🔥",
-                    user,
+                    if display_public_repositories {
+                        user.to_string()
+                    } else {
+                        user.name
+                    },
                     start.split('T').collect::<Vec<&str>>()[0]
                 ),
                 2,
