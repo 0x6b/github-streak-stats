@@ -47,7 +47,7 @@ impl Default for GitHubClient {
 impl GitHubClient {
     /// Calculate streak stats for a given user
     pub fn calc_streak(&self, login: &User, from: &str, to: &str) -> Result<Stats, Box<dyn Error>> {
-        let contribution_days = self.get_streak(login, from, to).unwrap();
+        let contribution_days = self.get_streak(login, from, to)?;
         let mut longest_streak = 0;
         let mut current_streak = 0;
         let mut longest_streak_start = NaiveDate::MIN;
