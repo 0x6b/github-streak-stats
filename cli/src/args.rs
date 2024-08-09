@@ -7,6 +7,10 @@ pub struct Args {
     #[arg()]
     pub login: Option<String>,
 
+    /// GitHub personal access token
+    #[arg(short, long, env = "GITHUB_TOKEN")]
+    pub github_token: String,
+
     /// Start date, in YYYY-MM-DD format. Defaults is 1 year ago from today.
     #[arg(short, long)]
     pub from: Option<String>,

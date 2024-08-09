@@ -15,6 +15,7 @@ mod args;
 fn main() -> Result<(), Box<dyn Error>> {
     let Args {
         login,
+        github_token: token,
         from,
         to,
         offset,
