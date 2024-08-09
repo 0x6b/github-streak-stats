@@ -5,9 +5,9 @@ edition = "2021"
 description = "A library for fetching GitHub streak stats."
 
 [dependencies]
-chrono = "0.4.38"
-graphql_client = { version = "0.14.0", features = ["reqwest-blocking", "reqwest-rustls"] }
+chrono = "0.4"
+graphql_client = { version = "0.14", features = ["reqwest-blocking", "reqwest-rustls"] }
 # pin the version to v0.11 until https://github.com/graphql-rust/graphql-client/pull/490 is merged
-reqwest = { version = "0.11.27", features = ["blocking"] }
-serde = "1.0.205"
-serde_json = "1.0.122"
+reqwest = { version = "0.11", features = ["blocking"] }
+serde = "1.0"
+serde_json = "1.0"
