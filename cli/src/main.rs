@@ -68,12 +68,12 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if display_public_repositories { user.to_string() } else { user.name },
                 start.split('T').collect::<Vec<&str>>()[0]
             ))
-            .alignment(Alignment::Center)
-            .col_span(2)
-            .build()]),
+                .alignment(Alignment::Center)
+                .col_span(2)
+                .build()]),
             Row::new(vec![
                 TableCell::new("Total contributions"),
-                TableCell::builder(total_contributions.to_string())
+                TableCell::builder(total_contributions)
                     .alignment(Alignment::Right)
                     .col_span(1)
                     .build(),
