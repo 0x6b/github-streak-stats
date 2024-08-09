@@ -1,13 +1,12 @@
 use std::{error::Error, ops::Sub};
 
 use clap::Parser;
+use github_streak_stats_lib::{github_client::GitHubClient, types::Stats};
 use term_table::{
     row::Row,
     table_cell::{Alignment, TableCell},
     TableBuilder, TableStyle,
 };
-
-use github_streak_stats_lib::{github_client::GitHubClient, types::Stats};
 
 use crate::args::Args;
 
@@ -27,10 +26,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let start = format!(
         "{}T00:00:00.000+{}",
         &(match from {
-            None => today
-                .sub(chrono::Duration::days(365))
-                .format("%Y-%m-%d")
-                .to_string(),
+            None => today.sub(chrono::Duration::days(365)).format("%Y-%m-%d").to_string(),
             Some(date) => date,
         }),
         offset,
@@ -67,22 +63,20 @@ fn main() -> Result<(), Box<dyn Error>> {
     let table = TableBuilder::new()
         .style(TableStyle::rounded())
         .rows(vec![
-            Row::new(vec![TableCell::new_with_alignment(
-                format!(
-                    "🔥 GitHub contribution stats for https://github.com/{} since {} 🔥",
-                    if display_public_repositories {
-                        user.to_string()
-                    } else {
-                        user.name
-                    },
-                    start.split('T').collect::<Vec<&str>>()[0]
-                ),
-                2,
-                Alignment::Center,
-            )]),
+            Row::new(vec![TableCell::builder(format!(
+                "🔥 GitHub contribution stats for https://github.com/{} since {} 🔥",
+                if display_public_repositories { user.to_string() } else { user.name },
+                start.split('T').collect::<Vec<&str>>()[0]
+            ))
+                .alignment(Alignment::Center)
+                .col_span(2)
+                .build()]),
             Row::new(vec![
                 TableCell::new("Total contributions"),
-                TableCell::new_with_alignment(total_contributions, 1, Alignment::Right),
+                TableCell::builder(total_contributions)
+                    .alignment(Alignment::Right)
+                    .col_span(1)
+                    .build(),
             ]),
             Row::new(vec![
                 TableCell::new("Longest and latest streak"),

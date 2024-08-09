@@ -1,6 +1,7 @@
+use std::fmt::Display;
+
 use chrono::NaiveDate;
 use graphql_client::GraphQLQuery;
-use std::fmt::Display;
 
 // Have to define custom type for DateTime and Date as these are not standard type
 type DateTime = String;
@@ -66,11 +67,7 @@ pub struct User {
 
 impl Display for User {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{} ({} public repos)",
-            self.name, self.public_repositories
-        )
+        write!(f, "{} ({} public repos)", self.name, self.public_repositories)
     }
 }
 
@@ -85,9 +82,6 @@ pub struct Streak {
 /// Converts a tuple of (NaiveDate, NaiveDate) to Streak
 impl From<(NaiveDate, NaiveDate)> for Streak {
     fn from(value: (NaiveDate, NaiveDate)) -> Self {
-        Self {
-            start: value.0,
-            end: value.1,
-        }
+        Self { start: value.0, end: value.1 }
     }
 }

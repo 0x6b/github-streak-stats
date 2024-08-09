@@ -1,12 +1,13 @@
 [package]
 name = "github-streak-stats-lib"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2021"
 description = "A library for fetching GitHub streak stats."
 
 [dependencies]
-chrono = "0.4.26"
-graphql_client = { version = "0.13.0", features = ["reqwest-blocking", "reqwest-rustls"] }
-reqwest = { version = "0.11.18", features = ["blocking"] }
-serde = "1.0.164"
-serde_json = "1.0.96"
+chrono = "0.4"
+graphql_client = { version = "0.14", features = ["reqwest-blocking", "reqwest-rustls"] }
+# pin the version to v0.11 until https://github.com/graphql-rust/graphql-client/pull/490 is merged
+reqwest = { version = "0.11", features = ["blocking"] }
+serde = "1.0"
+serde_json = "1.0"
