@@ -19,15 +19,27 @@ pub struct GitHubClient {
     client: Client,
 }
 
-// for my own use case, only default implementation is needed at this moment
 impl Default for GitHubClient {
     fn default() -> Self {
         let token = env::var("GITHUB_TOKEN")
             .expect("Specify GitHub API token with GITHUB_TOKEN environment variable");
+        Self::new("https://api.github.com/graphql", "github-streaks-stats-lib/0.0.0", &token)
+    }
+}
+
+impl GitHubClient {
+    /// Create a new instance
+    ///
+    /// # Arguments
+    ///
+    /// - `endpoint` - GitHub GraphQL API endpoint
+    /// - `user_agent` - User agent string
+    /// - `token` - GitHub API token
+    pub fn new(endpoint: &str, user_agent: &str, token: &str) -> Self {
         Self {
-            endpoint: "https://api.github.com/graphql".to_string(),
+            endpoint: endpoint.to_string(),
             client: Client::builder()
-                .user_agent("github-streaks-stats-lib/0.0.0")
+                .user_agent(user_agent)
                 .default_headers(
                     std::iter::once((
                         AUTHORIZATION,
@@ -39,9 +51,7 @@ impl Default for GitHubClient {
                 .unwrap(),
         }
     }
-}
 
-impl GitHubClient {
     /// Calculate streak stats for a given user
     pub fn calc_streak(&self, login: &User, from: &str, to: &str) -> Result<Stats, Box<dyn Error>> {
         let contribution_days = self.get_streak(login, from, to)?;
