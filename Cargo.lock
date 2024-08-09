@@ -388,7 +388,7 @@ checksum = "40ecd4077b5ae9fd2e9e169b102c6c330d0605168eb0e8bf79952b256dbefffd"
 
 [[package]]
 name = "github-streak-stats-cli"
-version = "1.5.1"
+version = "1.6.0"
 dependencies = [
  "chrono",
  "clap",
@@ -398,7 +398,7 @@ dependencies = [
 
 [[package]]
 name = "github-streak-stats-lib"
-version = "0.3.1"
+version = "0.4.0"
 dependencies = [
  "chrono",
  "graphql_client",

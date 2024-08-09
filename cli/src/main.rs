@@ -15,6 +15,7 @@ mod args;
 fn main() -> Result<(), Box<dyn Error>> {
     let Args {
         login,
+        github_token: token,
         from,
         to,
         offset,
@@ -40,7 +41,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         offset,
     );
 
-    let client = GitHubClient::default();
+    let client = GitHubClient::new(
+        "https://api.github.com/graphql",
+        "github-streaks-stats-lib/0.0.0",
+        &token,
+    );
 
     let user = match login {
         None => client.get_viewer()?,
@@ -68,9 +73,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if display_public_repositories { user.to_string() } else { user.name },
                 start.split('T').collect::<Vec<&str>>()[0]
             ))
-                .alignment(Alignment::Center)
-                .col_span(2)
-                .build()]),
+            .alignment(Alignment::Center)
+            .col_span(2)
+            .build()]),
             Row::new(vec![
                 TableCell::new("Total contributions"),
                 TableCell::builder(total_contributions)
