@@ -1,10 +1,7 @@
 use std::{env, error::Error};
 
 use chrono::NaiveDate;
-use graphql_client::{
-    reqwest::post_graphql_blocking,
-    {GraphQLQuery, Response},
-};
+use graphql_client::{reqwest::post_graphql_blocking, GraphQLQuery, Response};
 use reqwest::{
     blocking::Client,
     header::{HeaderValue, AUTHORIZATION},
@@ -115,9 +112,7 @@ impl GitHubClient {
 
     pub fn get_user(&self, login: &str) -> Result<User, Box<dyn Error>> {
         let response = self
-            .request::<UserQuery>(user_query::Variables {
-                login: login.to_string(),
-            })?
+            .request::<UserQuery>(user_query::Variables { login: login.to_string() })?
             .data
             .ok_or("No login information. Check your GitHub API token.")?
             .user
@@ -125,10 +120,7 @@ impl GitHubClient {
 
         let login = response.login;
         let public_repositories = response.repositories.total_count;
-        Ok(User {
-            name: login,
-            public_repositories,
-        })
+        Ok(User { name: login, public_repositories })
     }
 
     /// Get login name of the GitHub API token owner
@@ -139,10 +131,7 @@ impl GitHubClient {
             .ok_or("No login information. Check your GitHub API token.")?;
         let login = response.viewer.login;
         let public_repositories = response.viewer.repositories.total_count;
-        Ok(User {
-            name: login,
-            public_repositories,
-        })
+        Ok(User { name: login, public_repositories })
     }
 
     // Simple helper function to make a request
@@ -150,11 +139,7 @@ impl GitHubClient {
         &self,
         variables: T::Variables,
     ) -> Result<Response<T::ResponseData>, Box<dyn Error>> {
-        Ok(post_graphql_blocking::<T, _>(
-            &self.client,
-            &self.endpoint,
-            variables,
-        )?)
+        Ok(post_graphql_blocking::<T, _>(&self.client, &self.endpoint, variables)?)
     }
 }
 

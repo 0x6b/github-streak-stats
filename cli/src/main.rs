@@ -26,10 +26,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let start = format!(
         "{}T00:00:00.000+{}",
         &(match from {
-            None => today
-                .sub(chrono::Duration::days(365))
-                .format("%Y-%m-%d")
-                .to_string(),
+            None => today.sub(chrono::Duration::days(365)).format("%Y-%m-%d").to_string(),
             Some(date) => date,
         }),
         offset,
@@ -68,16 +65,12 @@ fn main() -> Result<(), Box<dyn Error>> {
         .rows(vec![
             Row::new(vec![TableCell::builder(format!(
                 "🔥 GitHub contribution stats for https://github.com/{} since {} 🔥",
-                if display_public_repositories {
-                    user.to_string()
-                } else {
-                    user.name
-                },
+                if display_public_repositories { user.to_string() } else { user.name },
                 start.split('T').collect::<Vec<&str>>()[0]
             ))
-                .alignment(Alignment::Center)
-                .col_span(2)
-                .build()]),
+            .alignment(Alignment::Center)
+            .col_span(2)
+            .build()]),
             Row::new(vec![
                 TableCell::new("Total contributions"),
                 TableCell::builder(total_contributions.to_string())
