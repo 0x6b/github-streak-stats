@@ -33,8 +33,4 @@ pub struct Args {
     /// Display contribution matrix
     #[arg(short = 'm', long)]
     pub display_matrix: bool,
-
-    /// Debug mode
-    #[arg(short, long, hide = true)]
-    pub debug: bool,
 }

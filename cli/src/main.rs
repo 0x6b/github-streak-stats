@@ -22,7 +22,6 @@ fn main() -> Result<()> {
         offset,
         display_public_repositories,
         display_matrix,
-        debug,
     } = Args::parse();
 
     let today = Zoned::now();
@@ -47,29 +46,21 @@ fn main() -> Result<()> {
         &end.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
     )?;
 
-    if debug {
-        println!("args: {:#?}", Args::parse());
-        println!("start: {}", start);
-        println!("end: {}", end);
-        println!(
-            "{:#?}",
-            client.get_contributions(
-                &user,
-                &start.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
-                &end.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string()
-            )?
-        );
-    }
-
     let Stats {
         total_contributions,
         longest_streak,
         current_streak,
     } = client.calc_streak_from_contributions(&contributions)?;
 
-    let matrix = if from.is_some() && to.is_some() || !display_matrix {
-        "".to_string()
-    } else {
+    let mut rows = vec![Row::new(vec![TableCell::builder(format!(
+        "🔥 GitHub contribution stats for https://github.com/{} since {} 🔥",
+        if display_public_repositories { user.to_string() } else { user.name },
+        start.strftime("%Y-%m-%d"),
+    ))
+        .alignment(Alignment::Center)
+        .col_span(2)
+        .build()])];
+    if display_matrix {
         // find max contribution count from the stats
         let max = contributions.iter().map(|day| day.contribution_count).max().unwrap();
 
@@ -107,18 +98,7 @@ fn main() -> Result<()> {
             .map(|row| row.join(""))
             .collect::<Vec<String>>()
             .join("\n");
-        matrix
-    };
 
-    let mut rows = vec![Row::new(vec![TableCell::builder(format!(
-        "🔥 GitHub contribution stats for https://github.com/{} since {} 🔥",
-        if display_public_repositories { user.to_string() } else { user.name },
-        start.strftime("%Y-%m-%d"),
-    ))
-        .alignment(Alignment::Center)
-        .col_span(2)
-        .build()])];
-    if display_matrix {
         rows.push(Row::new(vec![TableCell::builder(matrix)
             .alignment(Alignment::Center)
             .col_span(2)
