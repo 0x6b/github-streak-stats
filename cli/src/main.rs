@@ -54,8 +54,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .unwrap()
         }
     }
-        .strftime("%Y-%m-%dT%H:%M:%S.000%z")
-        .to_string();
+    .strftime("%Y-%m-%dT%H:%M:%S.000%z")
+    .to_string();
+
     let end = match to {
         Some(to) => parse_date(&to)?
             .to_zoned(TimeZone::fixed(tz::offset(offset.parse().unwrap_or_default())))?,
@@ -67,8 +68,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .unwrap()
         }
     }
-        .strftime("%Y-%m-%dT%H:%M:%S.000%z")
-        .to_string();
+    .strftime("%Y-%m-%dT%H:%M:%S.000%z")
+    .to_string();
 
     let client = GitHubClient::new(
         "https://api.github.com/graphql",
@@ -81,7 +82,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some(login) => client.get_user(login)?,
     };
 
-    let stats = client.get_streak(&user, &start, &end)?;
+    let stats = client.get_contributions(&user, &start, &end)?;
 
     // find max contribution count from the stats
     let max = stats.iter().map(|day| day.contribution_count).max().unwrap();
@@ -133,14 +134,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("args: {:#?}", Args::parse());
         println!("start: {}", start);
         println!("end: {}", end);
-        println!("{:#?}", client.get_streak(&user, &start, &end)?);
+        println!("{:#?}", client.get_contributions(&user, &start, &end)?);
     }
 
     let Stats {
         total_contributions,
         longest_streak,
         current_streak,
-    } = client.calc_streak(&user, &start, &end)?;
+    } = client.calc_streak_from_contributions(&stats)?;
 
     let table = TableBuilder::new()
         .style(TableStyle::rounded())
@@ -150,9 +151,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if display_public_repositories { user.to_string() } else { user.name },
                 start.split('T').next().unwrap(),
             ))
-                .alignment(Alignment::Center)
-                .col_span(2)
-                .build()]),
+            .alignment(Alignment::Center)
+            .col_span(2)
+            .build()]),
             Row::new(vec![TableCell::builder(matrix_string)
                 .alignment(Alignment::Center)
                 .col_span(2)

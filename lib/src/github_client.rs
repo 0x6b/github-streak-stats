@@ -45,7 +45,7 @@ impl GitHubClient {
                         AUTHORIZATION,
                         HeaderValue::from_str(&format!("Bearer {}", token)).unwrap(),
                     ))
-                    .collect(),
+                        .collect(),
                 )
                 .build()
                 .unwrap(),
@@ -54,7 +54,14 @@ impl GitHubClient {
 
     /// Calculate streak stats for a given user
     pub fn calc_streak(&self, login: &User, from: &str, to: &str) -> Result<Stats, Box<dyn Error>> {
-        let contribution_days = self.get_streak(login, from, to)?;
+        let contribution_days = self.get_contributions(login, from, to)?;
+        self.calc_streak_from_contributions(&contribution_days)
+    }
+
+    pub fn calc_streak_from_contributions(
+        &self,
+        contributions: &[Contribution],
+    ) -> Result<Stats, Box<dyn Error>> {
         let mut longest_streak = 0;
         let mut current_streak = 0;
         let mut longest_streak_start = NaiveDate::MIN;
@@ -63,7 +70,7 @@ impl GitHubClient {
         let mut current_streak_end = NaiveDate::MIN;
         let mut total_contributions = 0;
 
-        for c in contribution_days.iter() {
+        for c in contributions.iter() {
             if c.contribution_count > 0 {
                 total_contributions += c.contribution_count;
                 current_streak += 1;
@@ -88,8 +95,8 @@ impl GitHubClient {
         })
     }
 
-    /// Get streak for a given user
-    pub fn get_streak(
+    /// Get contributions for a given user
+    pub fn get_contributions(
         &self,
         user: &User,
         from: &str,
