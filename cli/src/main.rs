@@ -95,12 +95,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         .map(|row| row.join(""))
         .collect::<Vec<String>>()
         .join("\n");
-    println!("{}", matrix_string);
-
-    matrix.iter().for_each(|row| {
-        row.iter().for_each(|cell| print!("{}", cell));
-        println!();
-    });
 
     let today = chrono::Local::now();
     let start = format!(
