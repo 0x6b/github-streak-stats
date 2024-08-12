@@ -3,6 +3,7 @@ use std::error::Error;
 use clap::Parser;
 use colorful::{Color, Colorful, RGB};
 use github_streak_stats_lib::{github_client::GitHubClient, types::Stats};
+use jiff::{civil::DateTime, tz, tz::TimeZone};
 use term_table::{
     row::Row,
     table_cell::{Alignment, TableCell},
@@ -25,22 +26,60 @@ fn main() -> Result<(), Box<dyn Error>> {
     } = Args::parse();
 
     let today = jiff::Zoned::now();
-    today.offset().checked_add(offset.parse().unwrap_or_default())?;
-
+    today.offset().checked_sub(offset.parse().unwrap_or_default())?;
     let span = jiff::Span::new();
 
-    // find the first Saturday after start
-    let end = (0..7)
-        .flat_map(|i| today.checked_add(span.days(i)))
-        .find(|date| date.weekday() == jiff::civil::Weekday::Saturday)
-        .unwrap();
-
-    // find the first Sunday before start
-    let a_year_ago = today.checked_sub(span.weeks(52))?;
-    let start = (0..7)
-        .flat_map(|i| a_year_ago.checked_sub(span.days(i)))
-        .find(|date| date.weekday() == jiff::civil::Weekday::Sunday)
-        .unwrap();
+    let start = match from {
+        Some(from) => {
+            let d = from.split('-').collect::<Vec<_>>();
+            let date = DateTime::new(
+                d[0].parse().unwrap(),
+                d[1].parse().unwrap(),
+                d[2].parse().unwrap(),
+                0,
+                0,
+                0,
+                0,
+            )?;
+            date.to_zoned(TimeZone::fixed(tz::offset(offset.parse().unwrap_or_default())))?
+        }
+        None => {
+            // find the first Sunday before start
+            let a_year_ago = today.checked_sub(span.weeks(52))?;
+            let start = (0..7)
+                .flat_map(|i| a_year_ago.checked_sub(span.days(i)))
+                .find(|date| date.weekday() == jiff::civil::Weekday::Sunday)
+                .unwrap();
+            start
+        }
+    }
+        .strftime("%Y-%m-%dT%H:%M:%S.000%z")
+        .to_string();
+    let end = match to {
+        Some(to) => {
+            let d = to.split('-').collect::<Vec<_>>();
+            let date = DateTime::new(
+                d[0].parse().unwrap(),
+                d[1].parse().unwrap(),
+                d[2].parse().unwrap(),
+                0,
+                0,
+                0,
+                0,
+            )?;
+            date.to_zoned(TimeZone::fixed(tz::offset(offset.parse().unwrap_or_default())))?
+        }
+        None => {
+            // find the first Saturday after start
+            let end = (0..7)
+                .flat_map(|i| today.checked_add(span.days(i)))
+                .find(|date| date.weekday() == jiff::civil::Weekday::Saturday)
+                .unwrap();
+            end
+        }
+    }
+        .strftime("%Y-%m-%dT%H:%M:%S.000%z")
+        .to_string();
 
     let client = GitHubClient::new(
         "https://api.github.com/graphql",
@@ -53,11 +92,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some(login) => client.get_user(login)?,
     };
 
-    let stats = client.get_streak(
-        &user,
-        &start.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
-        &end.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
-    )?;
+    let stats = client.get_streak(&user, &start, &end)?;
 
     // find max contribution count from the stats
     let max = stats.iter().map(|day| day.contribution_count).max().unwrap();
@@ -109,25 +144,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("args: {:#?}", Args::parse());
         println!("start: {}", start);
         println!("end: {}", end);
-        println!(
-            "{:#?}",
-            client.get_streak(
-                &user,
-                &start.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
-                &end.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string()
-            )?
-        );
+        println!("{:#?}", client.get_streak(&user, &start, &end)?);
     }
 
     let Stats {
         total_contributions,
         longest_streak,
         current_streak,
-    } = client.calc_streak(
-        &user,
-        &start.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
-        &end.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
-    )?;
+    } = client.calc_streak(&user, &start, &end)?;
 
     let table = TableBuilder::new()
         .style(TableStyle::rounded())
@@ -135,7 +159,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             Row::new(vec![TableCell::builder(format!(
                 "🔥 GitHub contribution stats for https://github.com/{} since {} 🔥",
                 if display_public_repositories { user.to_string() } else { user.name },
-                start.strftime("%Y-%m-%d"),
+                start,
             ))
                 .alignment(Alignment::Center)
                 .col_span(2)
