@@ -30,14 +30,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let span = jiff::Span::new();
 
     // find the first Saturday after start
-    let first_saturday = (0..7)
+    let end = (0..7)
         .flat_map(|i| today.checked_add(span.days(i)))
         .find(|date| date.weekday() == jiff::civil::Weekday::Saturday)
         .unwrap();
 
     // find the first Sunday before start
     let a_year_ago = today.checked_sub(span.weeks(52))?;
-    let first_sunday_a_year_ago = (0..7)
+    let start = (0..7)
         .flat_map(|i| a_year_ago.checked_sub(span.days(i)))
         .find(|date| date.weekday() == jiff::civil::Weekday::Sunday)
         .unwrap();
@@ -55,10 +55,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let stats = client.get_streak(
         &user,
-        &first_sunday_a_year_ago
-            .strftime("%Y-%m-%dT%H:%M:%S.000%z")
-            .to_string(),
-        &first_saturday.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
+        &start.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
+        &end.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
     )?;
 
     // find max contribution count from the stats
@@ -96,23 +94,23 @@ fn main() -> Result<(), Box<dyn Error>> {
         .collect::<Vec<String>>()
         .join("\n");
 
-    let today = chrono::Local::now();
-    let start = format!(
-        "{}T00:00:00.000+{}",
-        &(match from {
-            None => today.sub(chrono::Duration::days(365)).format("%Y-%m-%d").to_string(),
-            Some(date) => date,
-        }),
-        offset,
-    );
-    let end = format!(
-        "{}T00:00:00.000+{}",
-        &(match to {
-            None => today.format("%Y-%m-%d").to_string(),
-            Some(date) => date,
-        }),
-        offset,
-    );
+    // let today = chrono::Local::now();
+    // let start = format!(
+    //     "{}T00:00:00.000+{}",
+    //     &(match from {
+    //         None => today.sub(chrono::Duration::days(365)).format("%Y-%m-%d").to_string(),
+    //         Some(date) => date,
+    //     }),
+    //     offset,
+    // );
+    // let end = format!(
+    //     "{}T00:00:00.000+{}",
+    //     &(match to {
+    //         None => today.format("%Y-%m-%d").to_string(),
+    //         Some(date) => date,
+    //     }),
+    //     offset,
+    // );
 
     let client = GitHubClient::new(
         "https://api.github.com/graphql",
