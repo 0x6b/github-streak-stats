@@ -27,45 +27,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let today = Zoned::now();
     today.offset().checked_sub(offset.parse().unwrap_or_default())?;
-    let span = Span::new();
 
-    let parse_date = |date: &str| -> Result<Zoned, Box<dyn Error>> {
-        parse("%Y-%m-%d%z", format!("{}{}", date, offset))?
-            .to_zoned()
-            .map_err(Into::into)
-    };
-
-    let find_first_sunday_before = |date: &Zoned| -> Result<Zoned, Box<dyn Error>> {
-        (0..7)
-            .flat_map(|i| date.checked_sub(span.days(i)))
-            .find(|date| date.weekday() == Weekday::Sunday)
-            .ok_or("No Sunday found".into()) // really?
-    };
-
-    let find_first_saturday_after = |date: &Zoned| -> Result<Zoned, Box<dyn Error>> {
-        (0..7)
-            .flat_map(|i| date.checked_add(span.days(i)))
-            .find(|date| date.weekday() == Weekday::Saturday)
-            .ok_or("No Saturday found".into()) // really?
-    };
-
-    let (start, end) = match (from.clone(), to.clone()) {
-        (Some(from), Some(to)) => (parse_date(&from)?, parse_date(&to)?),
-        (Some(from), None) => {
-            let start = find_first_sunday_before(&parse_date(&from)?)?;
-            let end = find_first_saturday_after(&start.checked_add(span.weeks(52))?)?;
-            (start, end)
-        }
-        (None, Some(to)) => {
-            let end = find_first_saturday_after(&parse_date(&to)?)?;
-            let start = find_first_sunday_before(&end.checked_sub(span.weeks(52))?)?;
-            (start, end)
-        }
-        (None, None) => (
-            find_first_sunday_before(&today.checked_sub(span.weeks(52))?)?,
-            find_first_saturday_after(&today)?,
-        ),
-    };
+    let (start, end) = calc_start_and_end(&today, &from, &to, &offset)?;
 
     let client = GitHubClient::new(
         "https://api.github.com/graphql",
@@ -208,4 +171,50 @@ fn main() -> Result<(), Box<dyn Error>> {
     println!("{}", table.render());
 
     Ok(())
+}
+
+fn calc_start_and_end(
+    today: &Zoned,
+    from: &Option<String>,
+    to: &Option<String>,
+    offset: &str,
+) -> Result<(Zoned, Zoned), Box<dyn Error>> {
+    let (start, end) = match (from, to) {
+        (Some(from), Some(to)) => (parse_date(from, offset)?, parse_date(to, offset)?),
+        (Some(from), None) => {
+            let start = find_first_sunday_before(&parse_date(from, offset)?)?;
+            let end = find_first_saturday_after(&start.checked_add(Span::new().weeks(52))?)?;
+            (start, end)
+        }
+        (None, Some(to)) => {
+            let end = find_first_saturday_after(&parse_date(to, offset)?)?;
+            let start = find_first_sunday_before(&end.checked_sub(Span::new().weeks(52))?)?;
+            (start, end)
+        }
+        (None, None) => (
+            find_first_sunday_before(&today.checked_sub(Span::new().weeks(52))?)?,
+            find_first_saturday_after(today)?,
+        ),
+    };
+    Ok((start, end))
+}
+
+fn parse_date(date: &str, offset: &str) -> Result<Zoned, Box<dyn Error>> {
+    parse("%Y-%m-%d%z", format!("{}{}", date, offset))?
+        .to_zoned()
+        .map_err(Into::into)
+}
+
+fn find_first_sunday_before(date: &Zoned) -> Result<Zoned, Box<dyn Error>> {
+    (0..7)
+        .flat_map(|i| date.checked_sub(Span::new().days(i)))
+        .find(|date| date.weekday() == Weekday::Sunday)
+        .ok_or("No Sunday found".into()) // really?
+}
+
+fn find_first_saturday_after(date: &Zoned) -> Result<Zoned, Box<dyn Error>> {
+    (0..7)
+        .flat_map(|i| date.checked_add(Span::new().days(i)))
+        .find(|date| date.weekday() == Weekday::Saturday)
+        .ok_or("No Saturday found".into()) // really?
 }
