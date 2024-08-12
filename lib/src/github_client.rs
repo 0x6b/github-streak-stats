@@ -1,5 +1,6 @@
-use std::{env, error::Error};
+use std::env;
 
+use anyhow::{anyhow, Result};
 use chrono::NaiveDate;
 use graphql_client::{reqwest::post_graphql_blocking, GraphQLQuery, Response};
 use reqwest::{
@@ -45,7 +46,7 @@ impl GitHubClient {
                         AUTHORIZATION,
                         HeaderValue::from_str(&format!("Bearer {}", token)).unwrap(),
                     ))
-                    .collect(),
+                        .collect(),
                 )
                 .build()
                 .unwrap(),
@@ -53,8 +54,12 @@ impl GitHubClient {
     }
 
     /// Calculate streak stats for a given user
-    pub fn calc_streak(&self, login: &User, from: &str, to: &str) -> Result<Stats, Box<dyn Error>> {
-        let contribution_days = self.get_streak(login, from, to)?;
+    pub fn calc_streak(&self, login: &User, from: &str, to: &str) -> Result<Stats> {
+        let contribution_days = self.get_contributions(login, from, to)?;
+        self.calc_streak_from_contributions(&contribution_days)
+    }
+
+    pub fn calc_streak_from_contributions(&self, contributions: &[Contribution]) -> Result<Stats> {
         let mut longest_streak = 0;
         let mut current_streak = 0;
         let mut longest_streak_start = NaiveDate::MIN;
@@ -63,7 +68,7 @@ impl GitHubClient {
         let mut current_streak_end = NaiveDate::MIN;
         let mut total_contributions = 0;
 
-        for c in contribution_days.iter() {
+        for c in contributions.iter() {
             if c.contribution_count > 0 {
                 total_contributions += c.contribution_count;
                 current_streak += 1;
@@ -88,13 +93,13 @@ impl GitHubClient {
         })
     }
 
-    /// Get streak for a given user
-    pub fn get_streak(
+    /// Get contributions for a given user
+    pub fn get_contributions(
         &self,
         user: &User,
         from: &str,
         to: &str,
-    ) -> Result<Vec<Contribution>, Box<dyn Error>> {
+    ) -> Result<Vec<Contribution>> {
         let response = self.request::<StreakQuery>(streak_query::Variables {
             login: user.name.to_string(),
             from: Some(from.to_string()),
@@ -103,9 +108,9 @@ impl GitHubClient {
 
         let contribution_days = response
             .data
-            .ok_or("No data")?
+            .ok_or(anyhow!("No data"))?
             .user
-            .ok_or("No user")?
+            .ok_or(anyhow!("No user"))?
             .contributions_collection
             .contribution_calendar
             .weeks
@@ -120,13 +125,13 @@ impl GitHubClient {
         Ok(contribution_days)
     }
 
-    pub fn get_user(&self, login: &str) -> Result<User, Box<dyn Error>> {
+    pub fn get_user(&self, login: &str) -> Result<User> {
         let response = self
             .request::<UserQuery>(user_query::Variables { login: login.to_string() })?
             .data
-            .ok_or("No login information. Check your GitHub API token.")?
+            .ok_or(anyhow!("No login information. Check your GitHub API token."))?
             .user
-            .ok_or("No such user")?;
+            .ok_or(anyhow!("No such user"))?;
 
         let login = response.login;
         let public_repositories = response.repositories.total_count;
@@ -134,11 +139,11 @@ impl GitHubClient {
     }
 
     /// Get login name of the GitHub API token owner
-    pub fn get_viewer(&self) -> Result<User, Box<dyn Error>> {
+    pub fn get_viewer(&self) -> Result<User> {
         let response = self
             .request::<ViewerQuery>(viewer_query::Variables {})?
             .data
-            .ok_or("No login information. Check your GitHub API token.")?;
+            .ok_or(anyhow!("No login information. Check your GitHub API token."))?;
         let login = response.viewer.login;
         let public_repositories = response.viewer.repositories.total_count;
         Ok(User { name: login, public_repositories })
@@ -148,7 +153,7 @@ impl GitHubClient {
     fn request<T: GraphQLQuery>(
         &self,
         variables: T::Variables,
-    ) -> Result<Response<T::ResponseData>, Box<dyn Error>> {
+    ) -> Result<Response<T::ResponseData>> {
         Ok(post_graphql_blocking::<T, _>(&self.client, &self.endpoint, variables)?)
     }
 }

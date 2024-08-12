@@ -11,24 +11,26 @@ pub struct Args {
     #[arg(short, long, env = "GITHUB_TOKEN")]
     pub github_token: String,
 
-    /// Start date, in YYYY-MM-DD format. Defaults is 1 year ago from today.
+    /// Start date, in YYYY-MM-DD format. Default value will be the first Sunday before 52 weeks
+    /// ago. If specified, it will be the first Sunday before the specified date.
     #[arg(short, long)]
     pub from: Option<String>,
 
     /// End date, in YYYY-MM-DD format. Please note that the total time spanned by 'from' and 'to'
-    /// must not exceed 1 year. Defaults is today.
+    /// must not exceed 1 year. Default value will be the first Saturday after today. If specified,
+    /// it will be the first Saturday after the specified date.
     #[arg(short, long)]
     pub to: Option<String>,
 
-    /// Offset from UTC, in HH:MM format
-    #[arg(short, long, default_value = "09:00")]
+    /// Offset from UTC, in (+|-)HHMM format
+    #[arg(short, long, default_value = "+0900")]
     pub offset: String,
 
     /// Display number of public repositories owned
     #[arg(short = 'r', long)]
     pub display_public_repositories: bool,
 
-    /// Debug mode
-    #[arg(short, long, hide = true)]
-    pub debug: bool,
+    /// Display contribution matrix
+    #[arg(short = 'm', long)]
+    pub display_matrix: bool,
 }

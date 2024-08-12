@@ -1,6 +1,6 @@
 [package]
 name = "github-streak-stats-cli"
-version = "1.6.0"
+version = "1.7.0"
 edition = "2021"
 description = "Show GitHub contribution streak. Export `GITHUB_TOKEN` environment variable with your GitHub personal access token which has `read:user` scope."
 
@@ -9,7 +9,18 @@ name = "github-streak-stats"
 path = "src/main.rs"
 
 [dependencies]
-chrono = "0.4.38"
-clap = { version = "4.5.14", features = ["derive", "env"] }
-github-streak-stats-lib = { version = "0.4.0", path = "../lib" }
+anyhow = "1.0.86"
+# Command line arguments parser
+clap = { version = "4.5.15", features = ["derive", "env"] }
+
+# Colors for terminal output
+colorful = "0.3.2"
+
+# GitHub API client
+github-streak-stats-lib = { version = "0.5.0", path = "../lib" }
+
+# Date and time
+jiff = "0.1.5"
+
+# Pretty-printing table in terminal
 term-table = "1.4.0"
