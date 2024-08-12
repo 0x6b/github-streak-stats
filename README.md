@@ -10,28 +10,35 @@ $ cargo install --git https://github.com/0x6b/github-streak-stats github-streak-
 
 ## Setup
 
-Export `GITHUB_TOKEN` environment variable with your GitHub personal access token which has `read:user` scope.
+Export
+`GITHUB_TOKEN` environment variable with your GitHub personal access token which has
+`read:user` scope. You can pass it as an argument as well.
 
 ## Usage
 
 ```console
 $ github-streak-stats
 ╭──────────────────────────────────────────────────────────────────────────────────╮
-│   🔥 GitHub contribution stats for https://github.com/0x6b since 2023-08-11 🔥   │
+│   🔥 GitHub contribution stats for https://github.com/0x6b since 2023-08-13 🔥   │
 ├────────────────────────────────────────┬─────────────────────────────────────────┤
-│ Total contributions                    │                                    4192 │
+│ Total contributions                    │                                    4170 │
 ├────────────────────────────────────────┼─────────────────────────────────────────┤
-│ Longest and latest streak              │ 252 days, from 2023-12-03 to 2024-08-10 │
+│ Longest and latest streak              │ 253 days, from 2023-12-03 to 2024-08-11 │
 ├────────────────────────────────────────┼─────────────────────────────────────────┤
-│ Current streak                         │ 252 days, from 2023-12-03 to 2024-08-10 │
+│ Current streak                         │ 253 days, from 2023-12-03 to 2024-08-11 │
 ╰────────────────────────────────────────┴─────────────────────────────────────────╯
 ```
+
+Or
+
+![screenshot](media/screenshot.png)
 
 See help for detail.
 
 ```
 $ github-streak-stats -h
-Show GitHub contribution streak. Export `GITHUB_TOKEN` environment variable with your GitHub personal access token which has `read:user` scope.
+Show GitHub contribution streak. Export `GITHUB_TOKEN` environment variable with your GitHub personal access token which has
+`read:user` scope.
 
 Usage: github-streak-stats [OPTIONS] --github-token <GITHUB_TOKEN> [LOGIN]
 
@@ -40,10 +47,14 @@ Arguments:
 
 Options:
   -g, --github-token <GITHUB_TOKEN>  GitHub personal access token [env: GITHUB_TOKEN=ghp_...]
-  -f, --from <FROM>                  Start date, in YYYY-MM-DD format. Defaults is 1 year ago from today
-  -t, --to <TO>                      End date, in YYYY-MM-DD format. Please note that the total time spanned by 'from' and 'to' must not exceed 1 year. Defaults is today
-  -o, --offset <OFFSET>              Offset from UTC, in HH:MM format [default: 09:00]
+  -f, --from <FROM>                  Start date, in YYYY-MM-DD format. Default value will be the first Sunday before 52 weeks
+                                     ago. If specified, it will be the first Sunday before the specified date
+  -t, --to <TO>                      End date, in YYYY-MM-DD format. Please note that the total time spanned by 'from' and
+                                     'to' must not exceed 1 year. Default value will be the first Saturday after today. If
+                                     specified, it will be the first Saturday after the specified date
+  -o, --offset <OFFSET>              Offset from UTC, in (+|-)HHMM format [default: +0900]
   -r, --display-public-repositories  Display number of public repositories owned
+  -m, --display-matrix               Display contribution matrix
   -h, --help                         Print help
   -V, --version                      Print version
 ```
