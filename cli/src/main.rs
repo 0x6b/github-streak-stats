@@ -29,57 +29,46 @@ fn main() -> Result<(), Box<dyn Error>> {
     today.offset().checked_sub(offset.parse().unwrap_or_default())?;
     let span = jiff::Span::new();
 
+    let parse_date = |date: &str| -> Result<DateTime, Box<dyn Error>> {
+        let d = date.split('-').collect::<Vec<_>>();
+        Ok(DateTime::new(
+            d[0].parse().unwrap(),
+            d[1].parse().unwrap(),
+            d[2].parse().unwrap(),
+            0,
+            0,
+            0,
+            0,
+        )?)
+    };
+
     let start = match from {
-        Some(from) => {
-            let d = from.split('-').collect::<Vec<_>>();
-            let date = DateTime::new(
-                d[0].parse().unwrap(),
-                d[1].parse().unwrap(),
-                d[2].parse().unwrap(),
-                0,
-                0,
-                0,
-                0,
-            )?;
-            date.to_zoned(TimeZone::fixed(tz::offset(offset.parse().unwrap_or_default())))?
-        }
+        Some(from) => parse_date(&from)?
+            .to_zoned(TimeZone::fixed(tz::offset(offset.parse().unwrap_or_default())))?,
         None => {
             // find the first Sunday before start
             let a_year_ago = today.checked_sub(span.weeks(52))?;
-            let start = (0..7)
+            (0..7)
                 .flat_map(|i| a_year_ago.checked_sub(span.days(i)))
                 .find(|date| date.weekday() == jiff::civil::Weekday::Sunday)
-                .unwrap();
-            start
+                .unwrap()
         }
     }
-    .strftime("%Y-%m-%dT%H:%M:%S.000%z")
-    .to_string();
+        .strftime("%Y-%m-%dT%H:%M:%S.000%z")
+        .to_string();
     let end = match to {
-        Some(to) => {
-            let d = to.split('-').collect::<Vec<_>>();
-            let date = DateTime::new(
-                d[0].parse().unwrap(),
-                d[1].parse().unwrap(),
-                d[2].parse().unwrap(),
-                0,
-                0,
-                0,
-                0,
-            )?;
-            date.to_zoned(TimeZone::fixed(tz::offset(offset.parse().unwrap_or_default())))?
-        }
+        Some(to) => parse_date(&to)?
+            .to_zoned(TimeZone::fixed(tz::offset(offset.parse().unwrap_or_default())))?,
         None => {
             // find the first Saturday after start
-            let end = (0..7)
+            (0..7)
                 .flat_map(|i| today.checked_add(span.days(i)))
                 .find(|date| date.weekday() == jiff::civil::Weekday::Saturday)
-                .unwrap();
-            end
+                .unwrap()
         }
     }
-    .strftime("%Y-%m-%dT%H:%M:%S.000%z")
-    .to_string();
+        .strftime("%Y-%m-%dT%H:%M:%S.000%z")
+        .to_string();
 
     let client = GitHubClient::new(
         "https://api.github.com/graphql",
@@ -161,9 +150,9 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if display_public_repositories { user.to_string() } else { user.name },
                 start.split('T').next().unwrap(),
             ))
-            .alignment(Alignment::Center)
-            .col_span(2)
-            .build()]),
+                .alignment(Alignment::Center)
+                .col_span(2)
+                .build()]),
             Row::new(vec![TableCell::builder(matrix_string)
                 .alignment(Alignment::Center)
                 .col_span(2)
