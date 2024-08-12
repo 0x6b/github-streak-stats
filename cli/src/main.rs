@@ -53,8 +53,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             start
         }
     }
-        .strftime("%Y-%m-%dT%H:%M:%S.000%z")
-        .to_string();
+    .strftime("%Y-%m-%dT%H:%M:%S.000%z")
+    .to_string();
     let end = match to {
         Some(to) => {
             let d = to.split('-').collect::<Vec<_>>();
@@ -78,8 +78,8 @@ fn main() -> Result<(), Box<dyn Error>> {
             end
         }
     }
-        .strftime("%Y-%m-%dT%H:%M:%S.000%z")
-        .to_string();
+    .strftime("%Y-%m-%dT%H:%M:%S.000%z")
+    .to_string();
 
     let client = GitHubClient::new(
         "https://api.github.com/graphql",
@@ -159,11 +159,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             Row::new(vec![TableCell::builder(format!(
                 "🔥 GitHub contribution stats for https://github.com/{} since {} 🔥",
                 if display_public_repositories { user.to_string() } else { user.name },
-                start,
+                start.split('T').next().unwrap(),
             ))
-                .alignment(Alignment::Center)
-                .col_span(2)
-                .build()]),
+            .alignment(Alignment::Center)
+            .col_span(2)
+            .build()]),
             Row::new(vec![TableCell::builder(matrix_string)
                 .alignment(Alignment::Center)
                 .col_span(2)
