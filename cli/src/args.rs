@@ -30,6 +30,10 @@ pub struct Args {
     #[arg(short = 'r', long)]
     pub display_public_repositories: bool,
 
+    /// Display contribution matrix
+    #[arg(short = 'm', long)]
+    pub display_matrix: bool,
+
     /// Debug mode
     #[arg(short, long, hide = true)]
     pub debug: bool,

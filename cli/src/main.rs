@@ -22,6 +22,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         to,
         offset,
         display_public_repositories,
+        display_matrix,
         debug,
     } = Args::parse();
 
@@ -67,7 +68,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         current_streak,
     } = client.calc_streak_from_contributions(&contributions)?;
 
-    let matrix = if !(from.is_some() && to.is_some()) {
+    let matrix = if from.is_some() && to.is_some() || !display_matrix {
+        "".to_string()
+    } else {
         // find max contribution count from the stats
         let max = contributions.iter().map(|day| day.contribution_count).max().unwrap();
 
@@ -94,69 +97,61 @@ fn main() -> Result<(), Box<dyn Error>> {
             })
             .collect();
 
-        // transpose the matrix
+        // transpose the matrix as the data is displayed at GitHub
         let matrix: Vec<Vec<String>> = (0..7)
             .map(|i| matrix.iter().map(|row| row[i].clone()).collect())
             .collect();
 
-        Row::new(vec![TableCell::builder(
-            matrix
-                .iter()
-                .map(|row| row.join(""))
-                .collect::<Vec<String>>()
-                .join("\n"),
-        )
-            .alignment(Alignment::Center)
-            .col_span(2)
-            .build()])
-    } else {
-        Row::new(vec![TableCell::builder(
-            "(No contribution graph available when both 'from' and 'to' are specified)",
-        )
-            .alignment(Alignment::Center)
-            .col_span(2)
-            .build()])
+        // join the matrix into a single string
+        let matrix = matrix
+            .iter()
+            .map(|row| row.join(""))
+            .collect::<Vec<String>>()
+            .join("\n");
+        matrix
     };
 
-    let table = TableBuilder::new()
-        .style(TableStyle::rounded())
-        .rows(vec![
-            Row::new(vec![TableCell::builder(format!(
-                "🔥 GitHub contribution stats for https://github.com/{} since {} 🔥",
-                if display_public_repositories { user.to_string() } else { user.name },
-                start.strftime("%Y-%m-%d"),
-            ))
-                .alignment(Alignment::Center)
-                .col_span(2)
-                .build()]),
-            matrix,
-            Row::new(vec![
-                TableCell::new("Total contributions"),
-                TableCell::builder(total_contributions)
-                    .alignment(Alignment::Right)
-                    .col_span(1)
-                    .build(),
-            ]),
-            Row::new(vec![
-                TableCell::new("Longest and latest streak"),
-                TableCell::new(format!(
-                    "{} days, from {} to {}",
-                    (longest_streak.end - longest_streak.start).num_days() + 1,
-                    longest_streak.start,
-                    longest_streak.end,
-                )),
-            ]),
-            Row::new(vec![
-                TableCell::new("Current streak"),
-                TableCell::new(format!(
-                    "{} days, from {} to {}",
-                    (current_streak.end - current_streak.start).num_days() + 1,
-                    current_streak.start,
-                    current_streak.end,
-                )),
-            ]),
-        ])
-        .build();
+    let mut rows = vec![Row::new(vec![TableCell::builder(format!(
+        "🔥 GitHub contribution stats for https://github.com/{} since {} 🔥",
+        if display_public_repositories { user.to_string() } else { user.name },
+        start.strftime("%Y-%m-%d"),
+    ))
+        .alignment(Alignment::Center)
+        .col_span(2)
+        .build()])];
+    if display_matrix {
+        rows.push(Row::new(vec![TableCell::builder(matrix)
+            .alignment(Alignment::Center)
+            .col_span(2)
+            .build()]));
+    }
+    rows.push(Row::new(vec![
+        TableCell::new("Total contributions"),
+        TableCell::builder(total_contributions)
+            .alignment(Alignment::Right)
+            .col_span(1)
+            .build(),
+    ]));
+    rows.push(Row::new(vec![
+        TableCell::new("Longest and latest streak"),
+        TableCell::new(format!(
+            "{} days, from {} to {}",
+            (longest_streak.end - longest_streak.start).num_days() + 1,
+            longest_streak.start,
+            longest_streak.end,
+        )),
+    ]));
+    rows.push(Row::new(vec![
+        TableCell::new("Current streak"),
+        TableCell::new(format!(
+            "{} days, from {} to {}",
+            (current_streak.end - current_streak.start).num_days() + 1,
+            current_streak.start,
+            current_streak.end,
+        )),
+    ]));
+
+    let table = TableBuilder::new().style(TableStyle::rounded()).rows(rows).build();
     println!("{}", table.render());
 
     Ok(())
@@ -168,15 +163,35 @@ fn calc_start_and_end(
     to: &Option<String>,
     offset: &str,
 ) -> Result<(Zoned, Zoned), Box<dyn Error>> {
+    let parse_date = |date: &str| -> Result<Zoned, Box<dyn Error>> {
+        parse("%Y-%m-%d%z", format!("{}{}", date, offset))?
+            .to_zoned()
+            .map_err(Into::into)
+    };
+
+    let find_first_sunday_before = |date: &Zoned| -> Result<Zoned, Box<dyn Error>> {
+        (0..7)
+            .flat_map(|i| date.checked_sub(Span::new().days(i)))
+            .find(|date| date.weekday() == Weekday::Sunday)
+            .ok_or("No Sunday found".into()) // really?
+    };
+
+    let find_first_saturday_after = |date: &Zoned| -> Result<Zoned, Box<dyn Error>> {
+        (0..7)
+            .flat_map(|i| date.checked_add(Span::new().days(i)))
+            .find(|date| date.weekday() == Weekday::Saturday)
+            .ok_or("No Saturday found".into()) // really?
+    };
+
     let (start, end) = match (from, to) {
-        (Some(from), Some(to)) => (parse_date(from, offset)?, parse_date(to, offset)?),
+        (Some(from), Some(to)) => (parse_date(from)?, parse_date(to)?),
         (Some(from), None) => {
-            let start = find_first_sunday_before(&parse_date(from, offset)?)?;
+            let start = find_first_sunday_before(&parse_date(from)?)?;
             let end = find_first_saturday_after(&start.checked_add(Span::new().weeks(52))?)?;
             (start, end)
         }
         (None, Some(to)) => {
-            let end = find_first_saturday_after(&parse_date(to, offset)?)?;
+            let end = find_first_saturday_after(&parse_date(to)?)?;
             let start = find_first_sunday_before(&end.checked_sub(Span::new().weeks(52))?)?;
             (start, end)
         }
@@ -186,24 +201,4 @@ fn calc_start_and_end(
         ),
     };
     Ok((start, end))
-}
-
-fn parse_date(date: &str, offset: &str) -> Result<Zoned, Box<dyn Error>> {
-    parse("%Y-%m-%d%z", format!("{}{}", date, offset))?
-        .to_zoned()
-        .map_err(Into::into)
-}
-
-fn find_first_sunday_before(date: &Zoned) -> Result<Zoned, Box<dyn Error>> {
-    (0..7)
-        .flat_map(|i| date.checked_sub(Span::new().days(i)))
-        .find(|date| date.weekday() == Weekday::Sunday)
-        .ok_or("No Sunday found".into()) // really?
-}
-
-fn find_first_saturday_after(date: &Zoned) -> Result<Zoned, Box<dyn Error>> {
-    (0..7)
-        .flat_map(|i| date.checked_add(Span::new().days(i)))
-        .find(|date| date.weekday() == Weekday::Saturday)
-        .ok_or("No Saturday found".into()) // really?
 }
