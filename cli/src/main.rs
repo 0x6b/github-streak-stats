@@ -43,7 +43,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let start = match from {
-        Some(from) => parse_date(&from)?
+        Some(ref from) => parse_date(&from)?
             .to_zoned(TimeZone::fixed(tz::offset(offset.parse().unwrap_or_default())))?,
         None => {
             // find the first Sunday before start
@@ -54,11 +54,11 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .unwrap()
         }
     }
-    .strftime("%Y-%m-%dT%H:%M:%S.000%z")
-    .to_string();
+        .strftime("%Y-%m-%dT%H:%M:%S.000%z")
+        .to_string();
 
     let end = match to {
-        Some(to) => parse_date(&to)?
+        Some(ref to) => parse_date(&to)?
             .to_zoned(TimeZone::fixed(tz::offset(offset.parse().unwrap_or_default())))?,
         None => {
             // find the first Saturday after start
@@ -68,8 +68,8 @@ fn main() -> Result<(), Box<dyn Error>> {
                 .unwrap()
         }
     }
-    .strftime("%Y-%m-%dT%H:%M:%S.000%z")
-    .to_string();
+        .strftime("%Y-%m-%dT%H:%M:%S.000%z")
+        .to_string();
 
     let client = GitHubClient::new(
         "https://api.github.com/graphql",
@@ -83,41 +83,6 @@ fn main() -> Result<(), Box<dyn Error>> {
     };
 
     let stats = client.get_contributions(&user, &start, &end)?;
-
-    // find max contribution count from the stats
-    let max = stats.iter().map(|day| day.contribution_count).max().unwrap();
-
-    // create a matrix of the stats, where each cell is a colored square
-    let matrix: Vec<Vec<String>> = stats
-        .chunks(7)
-        .map(|week| {
-            week.iter()
-                .map(|day| {
-                    if day.contribution_count == 0 {
-                        "\u{25A1} ".color(Color::DarkGray)
-                    } else {
-                        "\u{25A0} ".color(RGB::new(
-                            0,
-                            255 - (((day.contribution_count as f64 / max as f64) * 256.0) as u8),
-                            0,
-                        ))
-                    }
-                })
-                .map(|c| c.to_string())
-                .collect()
-        })
-        .collect();
-
-    // transpose the matrix
-    let matrix: Vec<Vec<String>> = (0..7)
-        .map(|i| matrix.iter().map(|row| row[i].clone()).collect())
-        .collect();
-
-    let matrix_string = matrix
-        .iter()
-        .map(|row| row.join(""))
-        .collect::<Vec<String>>()
-        .join("\n");
 
     let client = GitHubClient::new(
         "https://api.github.com/graphql",
@@ -143,6 +108,54 @@ fn main() -> Result<(), Box<dyn Error>> {
         current_streak,
     } = client.calc_streak_from_contributions(&stats)?;
 
+    let matrix_row = if from.is_none() && to.is_none() {
+        // find max contribution count from the stats
+        let max = stats.iter().map(|day| day.contribution_count).max().unwrap();
+
+        // normalize contribution counts to 0-255
+        let stats = stats
+            .iter()
+            .map(|day| (day.contribution_count as f64 / max as f64 * 255.0) as u8)
+            .collect::<Vec<u8>>();
+
+        // create a matrix of the stats, where each cell is a colored square
+        let matrix: Vec<Vec<String>> = stats
+            .chunks(7)
+            .map(|week| {
+                week.iter()
+                    .map(|contribution| {
+                        if contribution == &0 {
+                            "\u{25A1} ".color(Color::DarkGray)
+                        } else {
+                            "\u{25A0} ".color(RGB::new(0, 255 - contribution, 0))
+                        }
+                    })
+                    .map(|c| c.to_string())
+                    .collect()
+            })
+            .collect();
+
+        // transpose the matrix
+        let matrix: Vec<Vec<String>> = (0..7)
+            .map(|i| matrix.iter().map(|row| row[i].clone()).collect())
+            .collect();
+
+        let matrix_string = matrix
+            .iter()
+            .map(|row| row.join(""))
+            .collect::<Vec<String>>()
+            .join("\n");
+        Row::new(vec![TableCell::builder(matrix_string)
+            .alignment(Alignment::Center)
+            .col_span(2)
+            .build()])
+    } else {
+        Row::new(vec![TableCell::builder("No data available")
+            .alignment(Alignment::Center)
+            .col_span(2)
+            .build()])
+    };
+
     let table = TableBuilder::new()
         .style(TableStyle::rounded())
         .rows(vec![
@@ -151,13 +164,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                 if display_public_repositories { user.to_string() } else { user.name },
                 start.split('T').next().unwrap(),
             ))
-            .alignment(Alignment::Center)
-            .col_span(2)
-            .build()]),
-            Row::new(vec![TableCell::builder(matrix_string)
                 .alignment(Alignment::Center)
                 .col_span(2)
                 .build()]),
+            matrix_row,
             Row::new(vec![
                 TableCell::new("Total contributions"),
                 TableCell::builder(total_contributions)
