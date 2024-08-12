@@ -3,7 +3,7 @@ use std::error::Error;
 use clap::Parser;
 use colorful::{Color, Colorful, RGB};
 use github_streak_stats_lib::{github_client::GitHubClient, types::Stats};
-use jiff::{civil::DateTime, tz, tz::TimeZone};
+use jiff::{fmt::strtime, Zoned};
 use term_table::{
     row::Row,
     table_cell::{Alignment, TableCell},
@@ -25,51 +25,50 @@ fn main() -> Result<(), Box<dyn Error>> {
         debug,
     } = Args::parse();
 
-    let today = jiff::Zoned::now();
+    let today = Zoned::now();
     today.offset().checked_sub(offset.parse().unwrap_or_default())?;
     let span = jiff::Span::new();
 
-    let parse_date = |date: &str| -> Result<DateTime, Box<dyn Error>> {
-        let d = date.split('-').collect::<Vec<_>>();
-        Ok(DateTime::new(
-            d[0].parse().unwrap(),
-            d[1].parse().unwrap(),
-            d[2].parse().unwrap(),
-            0,
-            0,
-            0,
-            0,
-        )?)
+    let parse_date = |date: &str| -> Result<Zoned, Box<dyn Error>> {
+        strtime::parse("%Y-%m-%d%z", format!("{}{}", date, offset))?
+            .to_zoned()
+            .map_err(Into::into)
     };
 
-    let start = match from {
-        Some(ref from) => parse_date(&from)?
-            .to_zoned(TimeZone::fixed(tz::offset(offset.parse().unwrap_or_default())))?,
-        None => {
-            // find the first Sunday before start
-            let a_year_ago = today.checked_sub(span.weeks(52))?;
-            (0..7)
-                .flat_map(|i| a_year_ago.checked_sub(span.days(i)))
-                .find(|date| date.weekday() == jiff::civil::Weekday::Sunday)
-                .unwrap()
-        }
-    }
-        .strftime("%Y-%m-%dT%H:%M:%S.000%z")
-        .to_string();
+    let find_first_sunday_before = |date: &Zoned| -> Result<Zoned, Box<dyn Error>> {
+        (0..7)
+            .flat_map(|i| date.checked_sub(span.days(i)))
+            .find(|date| date.weekday() == jiff::civil::Weekday::Sunday)
+            .ok_or("No Sunday found".into()) // really?
+    };
 
-    let end = match to {
-        Some(ref to) => parse_date(&to)?
-            .to_zoned(TimeZone::fixed(tz::offset(offset.parse().unwrap_or_default())))?,
-        None => {
-            // find the first Saturday after start
-            (0..7)
-                .flat_map(|i| today.checked_add(span.days(i)))
-                .find(|date| date.weekday() == jiff::civil::Weekday::Saturday)
-                .unwrap()
+    let find_first_saturday_after = |date: &Zoned| -> Result<Zoned, Box<dyn Error>> {
+        (0..7)
+            .flat_map(|i| date.checked_add(span.days(i)))
+            .find(|date| date.weekday() == jiff::civil::Weekday::Saturday)
+            .ok_or("No Saturday found".into()) // really?
+    };
+
+    let (start, end) = match (from.clone(), to.clone()) {
+        (Some(from), Some(to)) => (parse_date(&from)?, parse_date(&to)?),
+        (Some(from), None) => {
+            let start = parse_date(&from)?;
+            (
+                find_first_sunday_before(&start)?,
+                find_first_saturday_after(
+                    &find_first_sunday_before(&start)?.checked_add(span.weeks(52))?,
+                )?,
+            )
         }
-    }
-        .strftime("%Y-%m-%dT%H:%M:%S.000%z")
-        .to_string();
+        (None, Some(to)) => {
+            let end = find_first_saturday_after(&parse_date(&to)?)?;
+            (find_first_sunday_before(&end.checked_sub(span.weeks(52))?)?, end)
+        }
+        (None, None) => (
+            find_first_sunday_before(&today.checked_sub(span.weeks(52))?)?,
+            find_first_saturday_after(&today)?,
+        ),
+    };
 
     let client = GitHubClient::new(
         "https://api.github.com/graphql",
@@ -82,7 +81,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some(login) => client.get_user(login)?,
     };
 
-    let stats = client.get_contributions(&user, &start, &end)?;
+    let stats = client.get_contributions(
+        &user,
+        &start.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
+        &end.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
+    )?;
 
     let client = GitHubClient::new(
         "https://api.github.com/graphql",
@@ -99,7 +102,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("args: {:#?}", Args::parse());
         println!("start: {}", start);
         println!("end: {}", end);
-        println!("{:#?}", client.get_contributions(&user, &start, &end)?);
+        println!(
+            "{:#?}",
+            client.get_contributions(
+                &user,
+                &start.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
+                &end.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string()
+            )?
+        );
     }
 
     let Stats {
@@ -108,7 +118,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         current_streak,
     } = client.calc_streak_from_contributions(&stats)?;
 
-    let matrix_row = if from.is_none() && to.is_none() {
+    let matrix = if !(from.is_some() && to.is_some()) {
         // find max contribution count from the stats
         let max = stats.iter().map(|day| day.contribution_count).max().unwrap();
 
@@ -140,12 +150,13 @@ fn main() -> Result<(), Box<dyn Error>> {
             .map(|i| matrix.iter().map(|row| row[i].clone()).collect())
             .collect();
 
-        let matrix_string = matrix
-            .iter()
-            .map(|row| row.join(""))
-            .collect::<Vec<String>>()
-            .join("\n");
-        Row::new(vec![TableCell::builder(matrix_string)
+        Row::new(vec![TableCell::builder(
+            matrix
+                .iter()
+                .map(|row| row.join(""))
+                .collect::<Vec<String>>()
+                .join("\n"),
+        )
             .alignment(Alignment::Center)
             .col_span(2)
             .build()])
@@ -162,12 +173,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             Row::new(vec![TableCell::builder(format!(
                 "🔥 GitHub contribution stats for https://github.com/{} since {} 🔥",
                 if display_public_repositories { user.to_string() } else { user.name },
-                start.split('T').next().unwrap(),
+                start.strftime("%Y-%m-%d"),
             ))
                 .alignment(Alignment::Center)
                 .col_span(2)
                 .build()]),
-            matrix_row,
+            matrix,
             Row::new(vec![
                 TableCell::new("Total contributions"),
                 TableCell::builder(total_contributions)

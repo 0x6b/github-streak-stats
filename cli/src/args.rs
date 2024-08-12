@@ -21,8 +21,8 @@ pub struct Args {
     #[arg(short, long)]
     pub to: Option<String>,
 
-    /// Offset from UTC, in HH:MM format
-    #[arg(short, long, default_value = "09:00")]
+    /// Offset from UTC, in (+|-)HHMM format
+    #[arg(short, long, default_value = "+0900")]
     pub offset: String,
 
     /// Display number of public repositories owned
