@@ -41,22 +41,11 @@ fn main() -> Result<(), Box<dyn Error>> {
         Some(login) => client.get_user(login)?,
     };
 
-    let stats = client.get_contributions(
+    let contributions = client.get_contributions(
         &user,
         &start.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
         &end.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
     )?;
-
-    let client = GitHubClient::new(
-        "https://api.github.com/graphql",
-        "github-streaks-stats-lib/0.0.0",
-        &github_token,
-    );
-
-    let user = match login {
-        None => client.get_viewer()?,
-        Some(login) => client.get_user(&login)?,
-    };
 
     if debug {
         println!("args: {:#?}", Args::parse());
@@ -76,14 +65,14 @@ fn main() -> Result<(), Box<dyn Error>> {
         total_contributions,
         longest_streak,
         current_streak,
-    } = client.calc_streak_from_contributions(&stats)?;
+    } = client.calc_streak_from_contributions(&contributions)?;
 
     let matrix = if !(from.is_some() && to.is_some()) {
         // find max contribution count from the stats
-        let max = stats.iter().map(|day| day.contribution_count).max().unwrap();
+        let max = contributions.iter().map(|day| day.contribution_count).max().unwrap();
 
         // normalize contribution counts to 0-255
-        let stats = stats
+        let stats = contributions
             .iter()
             .map(|day| (day.contribution_count as f64 / max as f64 * 255.0) as u8)
             .collect::<Vec<u8>>();
