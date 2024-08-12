@@ -52,17 +52,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let (start, end) = match (from.clone(), to.clone()) {
         (Some(from), Some(to)) => (parse_date(&from)?, parse_date(&to)?),
         (Some(from), None) => {
-            let start = parse_date(&from)?;
-            (
-                find_first_sunday_before(&start)?,
-                find_first_saturday_after(
-                    &find_first_sunday_before(&start)?.checked_add(span.weeks(52))?,
-                )?,
-            )
+            let start = find_first_sunday_before(&parse_date(&from)?)?;
+            let end = find_first_saturday_after(&start.checked_add(span.weeks(52))?)?;
+            (start, end)
         }
         (None, Some(to)) => {
             let end = find_first_saturday_after(&parse_date(&to)?)?;
-            (find_first_sunday_before(&end.checked_sub(span.weeks(52))?)?, end)
+            let start = find_first_sunday_before(&end.checked_sub(span.weeks(52))?)?;
+            (start, end)
         }
         (None, None) => (
             find_first_sunday_before(&today.checked_sub(span.weeks(52))?)?,
@@ -161,7 +158,9 @@ fn main() -> Result<(), Box<dyn Error>> {
             .col_span(2)
             .build()])
     } else {
-        Row::new(vec![TableCell::builder("No data available")
+        Row::new(vec![TableCell::builder(
+            "(No contribution graph available when both 'from' and 'to' are specified)",
+        )
             .alignment(Alignment::Center)
             .col_span(2)
             .build()])
