@@ -1,4 +1,4 @@
-use std::{error::Error, ops::Sub};
+use std::error::Error;
 
 use clap::Parser;
 use colorful::{Color, Colorful, RGB};
@@ -94,24 +94,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         .collect::<Vec<String>>()
         .join("\n");
 
-    // let today = chrono::Local::now();
-    // let start = format!(
-    //     "{}T00:00:00.000+{}",
-    //     &(match from {
-    //         None => today.sub(chrono::Duration::days(365)).format("%Y-%m-%d").to_string(),
-    //         Some(date) => date,
-    //     }),
-    //     offset,
-    // );
-    // let end = format!(
-    //     "{}T00:00:00.000+{}",
-    //     &(match to {
-    //         None => today.format("%Y-%m-%d").to_string(),
-    //         Some(date) => date,
-    //     }),
-    //     offset,
-    // );
-
     let client = GitHubClient::new(
         "https://api.github.com/graphql",
         "github-streaks-stats-lib/0.0.0",
@@ -127,14 +109,25 @@ fn main() -> Result<(), Box<dyn Error>> {
         println!("args: {:#?}", Args::parse());
         println!("start: {}", start);
         println!("end: {}", end);
-        println!("{:#?}", client.get_streak(&user, &start, &end)?);
+        println!(
+            "{:#?}",
+            client.get_streak(
+                &user,
+                &start.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
+                &end.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string()
+            )?
+        );
     }
 
     let Stats {
         total_contributions,
         longest_streak,
         current_streak,
-    } = client.calc_streak(&user, &start, &end)?;
+    } = client.calc_streak(
+        &user,
+        &start.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
+        &end.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
+    )?;
 
     let table = TableBuilder::new()
         .style(TableStyle::rounded())
@@ -142,7 +135,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             Row::new(vec![TableCell::builder(format!(
                 "🔥 GitHub contribution stats for https://github.com/{} since {} 🔥",
                 if display_public_repositories { user.to_string() } else { user.name },
-                start.split('T').collect::<Vec<&str>>()[0],
+                start.strftime("%Y-%m-%d"),
             ))
                 .alignment(Alignment::Center)
                 .col_span(2)
