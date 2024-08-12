@@ -15,7 +15,7 @@ mod args;
 fn main() -> Result<(), Box<dyn Error>> {
     let Args {
         login,
-        github_token: token,
+        github_token,
         from,
         to,
         offset,
@@ -44,7 +44,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let client = GitHubClient::new(
         "https://api.github.com/graphql",
         "github-streaks-stats-lib/0.0.0",
-        &token,
+        &github_token,
     );
 
     let user = match login {
