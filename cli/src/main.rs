@@ -3,7 +3,7 @@ use std::error::Error;
 use clap::Parser;
 use colorful::{Color, Colorful, RGB};
 use github_streak_stats_lib::{github_client::GitHubClient, types::Stats};
-use jiff::{fmt::strtime, Zoned};
+use jiff::{civil::Weekday, fmt::strtime::parse, Span, Zoned};
 use term_table::{
     row::Row,
     table_cell::{Alignment, TableCell},
@@ -27,10 +27,10 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let today = Zoned::now();
     today.offset().checked_sub(offset.parse().unwrap_or_default())?;
-    let span = jiff::Span::new();
+    let span = Span::new();
 
     let parse_date = |date: &str| -> Result<Zoned, Box<dyn Error>> {
-        strtime::parse("%Y-%m-%d%z", format!("{}{}", date, offset))?
+        parse("%Y-%m-%d%z", format!("{}{}", date, offset))?
             .to_zoned()
             .map_err(Into::into)
     };
@@ -38,14 +38,14 @@ fn main() -> Result<(), Box<dyn Error>> {
     let find_first_sunday_before = |date: &Zoned| -> Result<Zoned, Box<dyn Error>> {
         (0..7)
             .flat_map(|i| date.checked_sub(span.days(i)))
-            .find(|date| date.weekday() == jiff::civil::Weekday::Sunday)
+            .find(|date| date.weekday() == Weekday::Sunday)
             .ok_or("No Sunday found".into()) // really?
     };
 
     let find_first_saturday_after = |date: &Zoned| -> Result<Zoned, Box<dyn Error>> {
         (0..7)
             .flat_map(|i| date.checked_add(span.days(i)))
-            .find(|date| date.weekday() == jiff::civil::Weekday::Saturday)
+            .find(|date| date.weekday() == Weekday::Saturday)
             .ok_or("No Saturday found".into()) // really?
     };
 
