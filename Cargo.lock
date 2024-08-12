@@ -91,6 +91,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "anyhow"
+version = "1.0.86"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b3d1d046238990b9cf5bcde22a3fb3584ee5cf65fb2765f454ed428c7a0063da"
+
+[[package]]
 name = "ascii"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -396,6 +402,7 @@ checksum = "40ecd4077b5ae9fd2e9e169b102c6c330d0605168eb0e8bf79952b256dbefffd"
 name = "github-streak-stats-cli"
 version = "1.6.0"
 dependencies = [
+ "anyhow",
  "clap",
  "colorful",
  "github-streak-stats-lib",
@@ -407,6 +414,7 @@ dependencies = [
 name = "github-streak-stats-lib"
 version = "0.5.0"
 dependencies = [
+ "anyhow",
  "chrono",
  "graphql_client",
  "reqwest",

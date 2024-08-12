@@ -9,6 +9,7 @@ name = "github-streak-stats"
 path = "src/main.rs"
 
 [dependencies]
+anyhow = "1.0.86"
 # Command line arguments parser
 clap = { version = "4.5.15", features = ["derive", "env"] }
 

@@ -1,5 +1,4 @@
-use std::error::Error;
-
+use anyhow::{anyhow, Result};
 use clap::Parser;
 use colorful::{Color, Colorful, RGB};
 use github_streak_stats_lib::{github_client::GitHubClient, types::Stats};
@@ -14,7 +13,7 @@ use crate::args::Args;
 
 mod args;
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> Result<()> {
     let Args {
         login,
         github_token,
@@ -162,25 +161,25 @@ fn calc_start_and_end(
     from: &Option<String>,
     to: &Option<String>,
     offset: &str,
-) -> Result<(Zoned, Zoned), Box<dyn Error>> {
-    let parse_date = |date: &str| -> Result<Zoned, Box<dyn Error>> {
+) -> Result<(Zoned, Zoned)> {
+    let parse_date = |date: &str| -> Result<Zoned> {
         parse("%Y-%m-%d%z", format!("{}{}", date, offset))?
             .to_zoned()
             .map_err(Into::into)
     };
 
-    let find_first_sunday_before = |date: &Zoned| -> Result<Zoned, Box<dyn Error>> {
+    let find_first_sunday_before = |date: &Zoned| -> Result<Zoned> {
         (0..7)
             .flat_map(|i| date.checked_sub(Span::new().days(i)))
             .find(|date| date.weekday() == Weekday::Sunday)
-            .ok_or("No Sunday found".into()) // really?
+            .ok_or(anyhow!("No Sunday found")) // really?
     };
 
-    let find_first_saturday_after = |date: &Zoned| -> Result<Zoned, Box<dyn Error>> {
+    let find_first_saturday_after = |date: &Zoned| -> Result<Zoned> {
         (0..7)
             .flat_map(|i| date.checked_add(Span::new().days(i)))
             .find(|date| date.weekday() == Weekday::Saturday)
-            .ok_or("No Saturday found".into()) // really?
+            .ok_or(anyhow!("No Sunday found")) // really?
     };
 
     let (start, end) = match (from, to) {
