@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use clap::Parser;
-use colorful::{Color, Colorful, RGB};
+use colorful::{Colorful, RGB};
 use github_streak_stats_lib::{github_client::GitHubClient, types::Stats};
 use jiff::{civil::Weekday, fmt::strtime::parse, Span, Zoned};
 use term_table::{
@@ -76,13 +76,14 @@ fn main() -> Result<()> {
             .map(|week| {
                 week.iter()
                     .map(|contribution| {
-                        if contribution == &0 {
-                            "\u{25A0} ".color(RGB::new(127, 127, 127))
-                        } else {
-                            "\u{25A0} ".color(RGB::new(0, 255 - contribution, 0))
-                        }
+                        "\u{25A0} "
+                            .color(if *contribution == 0 {
+                                RGB::new(127, 127, 127)
+                            } else {
+                                RGB::new(0, 255 - contribution, 0)
+                            })
+                            .to_string()
                     })
-                    .map(|c| c.to_string())
                     .collect()
             })
             .collect();
