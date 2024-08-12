@@ -12,12 +12,13 @@ pub struct Args {
     pub github_token: String,
 
     /// Start date, in YYYY-MM-DD format. Default value will be the first Sunday before 52 weeks
-    /// ago.
+    /// ago. If specified, it will be the first Sunday before the specified date.
     #[arg(short, long)]
     pub from: Option<String>,
 
     /// End date, in YYYY-MM-DD format. Please note that the total time spanned by 'from' and 'to'
-    /// must not exceed 1 year. Default value will be the first Saturday after today.
+    /// must not exceed 1 year. Default value will be the first Saturday after today. If specified,
+    /// it will be the first Saturday after the specified date.
     #[arg(short, long)]
     pub to: Option<String>,
 
