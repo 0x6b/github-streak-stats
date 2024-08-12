@@ -77,7 +77,7 @@ fn main() -> Result<()> {
                 week.iter()
                     .map(|contribution| {
                         if contribution == &0 {
-                            "\u{25A1} ".color(Color::DarkGray)
+                            "\u{25A0} ".color(RGB::new(127, 127, 127))
                         } else {
                             "\u{25A0} ".color(RGB::new(0, 255 - contribution, 0))
                         }
