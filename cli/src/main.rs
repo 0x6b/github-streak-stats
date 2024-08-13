@@ -57,33 +57,31 @@ fn main() -> Result<()> {
         if display_public_repositories { user.to_string() } else { user.name },
         start.strftime("%Y-%m-%d"),
     ))
-        .alignment(Alignment::Center)
-        .col_span(2)
-        .build()])];
+    .alignment(Alignment::Center)
+    .col_span(2)
+    .build()])];
     if display_matrix {
         // find max contribution count from the stats
         let max = contributions.iter().map(|day| day.contribution_count).max().unwrap();
 
-        // normalize contribution counts to 0-255
-        let stats = contributions
+        let colors = contributions
             .iter()
-            .map(|day| (day.contribution_count as f64 / max as f64 * 255.0) as u8)
-            .collect::<Vec<u8>>();
+            .map(|day| day.contribution_count as f64 / max as f64)
+            .map(|c| match c {
+                0.0 => RGB::new(22, 27, 34),
+                0.0..=0.25 => RGB::new(14, 68, 41),
+                0.25..=0.5 => RGB::new(0, 109, 50),
+                0.5..=0.75 => RGB::new(38, 166, 65),
+                _ => RGB::new(57, 211, 83),
+            })
+            .collect::<Vec<_>>();
 
         // create a matrix of the stats, where each cell is a colored square
-        let matrix: Vec<Vec<String>> = stats
+        let matrix: Vec<Vec<String>> = colors
             .chunks(7)
             .map(|week| {
                 week.iter()
-                    .map(|contribution| {
-                        "\u{25A0} "
-                            .color(if *contribution == 0 {
-                                RGB::new(127, 127, 127)
-                            } else {
-                                RGB::new(0, 255 - contribution, 0)
-                            })
-                            .to_string()
-                    })
+                    .map(|contribution| "\u{25A0}".color(*contribution).to_string())
                     .collect()
             })
             .collect();
@@ -96,7 +94,7 @@ fn main() -> Result<()> {
         // join the matrix into a single string
         let matrix = matrix
             .iter()
-            .map(|row| row.join(""))
+            .map(|row| row.join(" "))
             .collect::<Vec<String>>()
             .join("\n");
 

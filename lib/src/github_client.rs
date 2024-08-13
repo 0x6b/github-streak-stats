@@ -46,7 +46,7 @@ impl GitHubClient {
                         AUTHORIZATION,
                         HeaderValue::from_str(&format!("Bearer {}", token)).unwrap(),
                     ))
-                        .collect(),
+                    .collect(),
                 )
                 .build()
                 .unwrap(),
