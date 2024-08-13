@@ -11,7 +11,7 @@ path = "src/main.rs"
 [dependencies]
 anyhow = "1.0.86"
 # Command line arguments parser
-clap = { version = "4.5.15", features = ["derive", "env"] }
+clap = { version = "4.5.15", features = ["derive", "env", "wrap_help"] }
 
 # Colors for terminal output
 colorful = "0.3.2"
