@@ -9,7 +9,7 @@ use term_table::{
     TableBuilder, TableStyle,
 };
 
-use crate::args::Args;
+use crate::args::{Args, Theme};
 
 mod args;
 
@@ -22,6 +22,7 @@ fn main() -> Result<()> {
         offset,
         display_public_repositories,
         display_matrix,
+        theme,
     } = Args::parse();
 
     let today = Zoned::now();
@@ -60,19 +61,38 @@ fn main() -> Result<()> {
     .alignment(Alignment::Center)
     .col_span(2)
     .build()])];
+
     if display_matrix {
+        let palette = match theme {
+            Theme::Dark => [
+                RGB::new(22, 27, 34),
+                RGB::new(14, 68, 41),
+                RGB::new(0, 109, 50),
+                RGB::new(38, 166, 65),
+                RGB::new(57, 211, 83),
+            ],
+            Theme::Light => [
+                RGB::new(235, 237, 240),
+                RGB::new(155, 233, 168),
+                RGB::new(64, 196, 99),
+                RGB::new(48, 161, 78),
+                RGB::new(33, 110, 57),
+            ],
+        };
+
         // find max contribution count from the stats
         let max = contributions.iter().map(|day| day.contribution_count).max().unwrap();
 
+        // map the contribution count to a color from the palette
         let colors = contributions
             .iter()
             .map(|day| day.contribution_count as f64 / max as f64)
             .map(|c| match c {
-                0.0 => RGB::new(22, 27, 34),
-                0.0..=0.25 => RGB::new(14, 68, 41),
-                0.25..=0.5 => RGB::new(0, 109, 50),
-                0.5..=0.75 => RGB::new(38, 166, 65),
-                _ => RGB::new(57, 211, 83),
+                0.0 => palette[0],
+                0.0..=0.25 => palette[1],
+                0.25..=0.5 => palette[2],
+                0.5..=0.75 => palette[3],
+                _ => palette[4],
             })
             .collect::<Vec<_>>();
 
@@ -103,6 +123,7 @@ fn main() -> Result<()> {
             .col_span(2)
             .build()]));
     }
+
     rows.push(Row::new(vec![
         TableCell::new("Total contributions"),
         TableCell::builder(total_contributions)
@@ -110,6 +131,7 @@ fn main() -> Result<()> {
             .col_span(1)
             .build(),
     ]));
+
     rows.push(Row::new(vec![
         TableCell::new("Longest and latest streak"),
         TableCell::new(format!(
@@ -119,6 +141,7 @@ fn main() -> Result<()> {
             longest_streak.end,
         )),
     ]));
+
     rows.push(Row::new(vec![
         TableCell::new("Current streak"),
         TableCell::new(format!(
