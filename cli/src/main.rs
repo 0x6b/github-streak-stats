@@ -136,7 +136,7 @@ fn main() -> Result<()> {
         TableCell::new("Longest and latest streak"),
         TableCell::new(format!(
             "{} days, from {} to {}",
-            (longest_streak.end - longest_streak.start).num_days() + 1,
+            (longest_streak.end - longest_streak.start).get_days() + 1,
             longest_streak.start,
             longest_streak.end,
         )),
@@ -146,7 +146,7 @@ fn main() -> Result<()> {
         TableCell::new("Current streak"),
         TableCell::new(format!(
             "{} days, from {} to {}",
-            (current_streak.end - current_streak.start).num_days() + 1,
+            (current_streak.end - current_streak.start).get_days() + 1,
             current_streak.start,
             current_streak.end,
         )),

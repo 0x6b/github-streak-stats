@@ -1,8 +1,8 @@
 use std::env;
 
 use anyhow::{anyhow, Result};
-use chrono::NaiveDate;
 use graphql_client::{reqwest::post_graphql_blocking, GraphQLQuery, Response};
+use jiff::{civil::Date, fmt::strtime::parse, Span};
 use reqwest::{
     blocking::Client,
     header::{HeaderValue, AUTHORIZATION},
@@ -62,10 +62,10 @@ impl GitHubClient {
     pub fn calc_streak_from_contributions(&self, contributions: &[Contribution]) -> Result<Stats> {
         let mut longest_streak = 0;
         let mut current_streak = 0;
-        let mut longest_streak_start = NaiveDate::MIN;
-        let mut longest_streak_end = NaiveDate::MIN;
-        let mut current_streak_start = NaiveDate::MIN;
-        let mut current_streak_end = NaiveDate::MIN;
+        let mut longest_streak_start = Date::MIN;
+        let mut longest_streak_end = Date::MIN;
+        let mut current_streak_start = Date::MIN;
+        let mut current_streak_end = Date::MIN;
         let mut total_contributions = 0;
 
         for c in contributions.iter() {
@@ -75,7 +75,8 @@ impl GitHubClient {
                 if current_streak >= longest_streak {
                     longest_streak = current_streak;
                     longest_streak_end = c.date;
-                    longest_streak_start = c.date - chrono::Duration::days(current_streak - 1);
+                    longest_streak_start =
+                        c.date.checked_sub(Span::new().days(current_streak - 1))?;
                 }
                 if current_streak == 1 {
                     current_streak_start = c.date;
@@ -117,7 +118,11 @@ impl GitHubClient {
             .into_iter()
             .flat_map(|week| week.contribution_days)
             .map(|day| Contribution {
-                date: NaiveDate::parse_from_str(&day.date, "%Y-%m-%d").unwrap(),
+                date: parse("%Y-%m-%d%z", format!("{}+0000", &day.date))
+                    .unwrap()
+                    .to_zoned()
+                    .unwrap()
+                    .date(),
                 contribution_count: day.contribution_count,
             })
             .collect::<Vec<_>>();
