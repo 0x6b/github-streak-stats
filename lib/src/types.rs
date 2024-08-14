@@ -1,6 +1,5 @@
 use std::fmt::Display;
 
-use chrono::NaiveDate;
 use graphql_client::GraphQLQuery;
 
 // Have to define custom type for DateTime and Date as these are not standard type
@@ -43,7 +42,7 @@ pub struct UserQuery;
 #[derive(Debug)]
 pub struct Contribution {
     /// Date of the contribution
-    pub date: NaiveDate,
+    pub date: jiff::civil::Date,
     /// Number of contributions on that date
     pub contribution_count: i64,
 }
@@ -74,14 +73,14 @@ impl Display for User {
 /// Simple date range
 pub struct Streak {
     /// Start date
-    pub start: NaiveDate,
+    pub start: jiff::civil::Date,
     /// End date
-    pub end: NaiveDate,
+    pub end: jiff::civil::Date,
 }
 
-/// Converts a tuple of (NaiveDate, NaiveDate) to Streak
-impl From<(NaiveDate, NaiveDate)> for Streak {
-    fn from(value: (NaiveDate, NaiveDate)) -> Self {
+/// Converts a tuple of (Date, Date) to Streak
+impl From<(jiff::civil::Date, jiff::civil::Date)> for Streak {
+    fn from(value: (jiff::civil::Date, jiff::civil::Date)) -> Self {
         Self { start: value.0, end: value.1 }
     }
 }

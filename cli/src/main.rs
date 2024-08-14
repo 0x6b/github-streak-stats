@@ -58,9 +58,9 @@ fn main() -> Result<()> {
         if display_public_repositories { user.to_string() } else { user.name },
         start.strftime("%Y-%m-%d"),
     ))
-    .alignment(Alignment::Center)
-    .col_span(2)
-    .build()])];
+        .alignment(Alignment::Center)
+        .col_span(2)
+        .build()])];
 
     if display_matrix {
         let palette = match theme {
@@ -80,31 +80,31 @@ fn main() -> Result<()> {
             ],
         };
 
-        // find max contribution count from the stats
+        // find max contribution count
         let max = contributions.iter().map(|day| day.contribution_count).max().unwrap();
 
-        // map the contribution count to a color from the palette
-        let colors = contributions
+        // map the contribution count to a colored cell
+        let colors: Vec<String> = contributions
             .iter()
-            .map(|day| day.contribution_count as f64 / max as f64)
-            .map(|c| match c {
-                0.0 => palette[0],
-                0.0..=0.25 => palette[1],
-                0.25..=0.5 => palette[2],
-                0.5..=0.75 => palette[3],
-                _ => palette[4],
+            .map(|contribution| {
+                if contribution.date > today.date() {
+                    return "".to_string();
+                }
+
+                "\u{25A0}"
+                    .color(match contribution.contribution_count as f64 / max as f64 {
+                        0.0 => palette[0],
+                        0.0..=0.25 => palette[1],
+                        0.25..=0.5 => palette[2],
+                        0.5..=0.75 => palette[3],
+                        _ => palette[4],
+                    })
+                    .to_string()
             })
             .collect::<Vec<_>>();
 
         // create a matrix of the stats, where each cell is a colored square
-        let matrix: Vec<Vec<String>> = colors
-            .chunks(7)
-            .map(|week| {
-                week.iter()
-                    .map(|contribution| "\u{25A0}".color(*contribution).to_string())
-                    .collect()
-            })
-            .collect();
+        let matrix: Vec<Vec<String>> = colors.chunks(7).map(|week| week.to_vec()).collect();
 
         // transpose the matrix as the data is displayed at GitHub
         let matrix: Vec<Vec<String>> = (0..7)
@@ -136,7 +136,7 @@ fn main() -> Result<()> {
         TableCell::new("Longest and latest streak"),
         TableCell::new(format!(
             "{} days, from {} to {}",
-            (longest_streak.end - longest_streak.start).num_days() + 1,
+            (longest_streak.end - longest_streak.start).get_days() + 1,
             longest_streak.start,
             longest_streak.end,
         )),
@@ -146,7 +146,7 @@ fn main() -> Result<()> {
         TableCell::new("Current streak"),
         TableCell::new(format!(
             "{} days, from {} to {}",
-            (current_streak.end - current_streak.start).num_days() + 1,
+            (current_streak.end - current_streak.start).get_days() + 1,
             current_streak.start,
             current_streak.end,
         )),

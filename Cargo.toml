@@ -4,3 +4,12 @@ members = [
     "lib",
 ]
 resolver = "2"
+
+[workspace.dependencies]
+# Error handling
+anyhow = "1.0.86"
+
+# Date and time
+jiff = "0.1.5"
+
+
