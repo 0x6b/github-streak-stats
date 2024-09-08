@@ -9,7 +9,7 @@ anyhow = { workspace = true }
 jiff = { workspace = true }
 
 # Fetching data from GitHub GraphQL API
-graphql_client = { version = "0.14.0", features = ["reqwest-blocking", "reqwest-rustls"] }
+graphql_client = { version = "0.14", features = ["reqwest-blocking", "reqwest-rustls"] }
 
 # HTTP client
 # pin the version to v0.11 until https://github.com/graphql-rust/graphql-client/pull/490 is merged
