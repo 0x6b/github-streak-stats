@@ -26,7 +26,6 @@ fn main() -> Result<()> {
     } = Args::parse();
 
     let today = Zoned::now();
-    today.offset().checked_sub(offset.parse().unwrap_or_default())?;
 
     let (start, end) = calc_start_and_end(&today, &from, &to, &offset)?;
 
