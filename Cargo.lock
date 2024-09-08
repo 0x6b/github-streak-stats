@@ -386,7 +386,7 @@ checksum = "40ecd4077b5ae9fd2e9e169b102c6c330d0605168eb0e8bf79952b256dbefffd"
 
 [[package]]
 name = "github-streak-stats-cli"
-version = "1.8.1"
+version = "1.8.2"
 dependencies = [
  "anyhow",
  "clap",
