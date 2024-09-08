@@ -13,7 +13,7 @@ anyhow = { workspace = true }
 jiff = { workspace = true }
 
 # Command line arguments parser
-clap = { version = "4.5.15", features = ["derive", "env", "wrap_help"] }
+clap = { version = "4.5.17", features = ["derive", "env", "wrap_help"] }
 
 # Colors for terminal output
 colorful = "0.3.2"

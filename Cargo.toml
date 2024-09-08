@@ -7,9 +7,7 @@ resolver = "2"
 
 [workspace.dependencies]
 # Error handling
-anyhow = "1.0.86"
+anyhow = "1.0.87"
 
 # Date and time
-jiff = "0.1.5"
-
-
+jiff = "0.1.13"
