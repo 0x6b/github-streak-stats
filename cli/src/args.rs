@@ -1,4 +1,7 @@
+use std::time::Duration;
+
 use clap::Parser;
+// use termbg::Theme;
 
 #[derive(Parser, Debug)]
 #[clap(about, version)]
@@ -34,8 +37,8 @@ pub struct Args {
     #[arg(short = 'm', long)]
     pub display_matrix: bool,
 
-    /// Theme for the contribution matrix. Possible values: dark, light
-    #[arg(short = 'e', long, default_value = "dark")]
+    /// Theme for the contribution matrix. Possible values: dark, light, or auto
+    #[arg(short = 'e', long, default_value = "auto")]
     pub theme: Theme,
 }
 
@@ -43,6 +46,17 @@ pub struct Args {
 pub enum Theme {
     Dark,
     Light,
+    #[allow(dead_code)] // For command line parsing only
+    Auto,
+}
+
+impl From<termbg::Theme> for Theme {
+    fn from(theme: termbg::Theme) -> Self {
+        match theme {
+            termbg::Theme::Dark => Self::Dark,
+            termbg::Theme::Light => Self::Light,
+        }
+    }
 }
 
 impl std::str::FromStr for Theme {
@@ -52,6 +66,9 @@ impl std::str::FromStr for Theme {
         match s.to_lowercase().as_str().chars().next().unwrap_or_default() {
             'd' => Ok(Theme::Dark),
             'l' => Ok(Theme::Light),
+            'a' => Ok(termbg::theme(Duration::from_millis(10))
+                .unwrap_or(termbg::Theme::Dark)
+                .into()),
             _ => Err("Invalid theme".to_string()),
         }
     }

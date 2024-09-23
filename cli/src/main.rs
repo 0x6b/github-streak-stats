@@ -77,6 +77,7 @@ fn main() -> Result<()> {
                 RGB::new(48, 161, 78),
                 RGB::new(33, 110, 57),
             ],
+            _ => unreachable!("Invalid theme"),
         };
 
         // find max contribution count

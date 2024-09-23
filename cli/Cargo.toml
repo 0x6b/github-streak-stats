@@ -22,3 +22,4 @@ colorful = "0.3.2"
 term-table = "1.4.0"
 
 github-streak-stats-lib = { version = "0.5.3", path = "../lib" }
+termbg = "0.5.1"
