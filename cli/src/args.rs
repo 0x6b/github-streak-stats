@@ -33,9 +33,9 @@ pub struct Args {
     #[arg(short = 'r', long)]
     pub display_public_repositories: bool,
 
-    /// Display contribution matrix
+    /// Do not display contribution matrix
     #[arg(short = 'm', long)]
-    pub display_matrix: bool,
+    pub no_display_matrix: bool,
 
     /// Theme for the contribution matrix. Possible values: dark, light, or auto
     #[arg(short = 'e', long, default_value = "auto")]

@@ -21,7 +21,7 @@ fn main() -> Result<()> {
         to,
         offset,
         display_public_repositories,
-        display_matrix,
+        no_display_matrix,
         theme,
     } = Args::parse();
 
@@ -61,7 +61,7 @@ fn main() -> Result<()> {
         .col_span(2)
         .build()])];
 
-    if display_matrix {
+    if !no_display_matrix {
         let palette = match theme {
             Theme::Dark => [
                 RGB::new(22, 27, 34),
