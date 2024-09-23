@@ -1,6 +1,6 @@
 [package]
 name = "github-streak-stats-cli"
-version = "1.8.3"
+version = "1.9.0"
 edition = "2021"
 description = "Show GitHub contribution streak. Export `GITHUB_TOKEN` environment variable with your GitHub personal access token which has `read:user` scope."
 
