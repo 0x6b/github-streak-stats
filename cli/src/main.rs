@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 use clap::Parser;
-use colorful::{Colorful, RGB};
+use colorful::Colorful;
 use github_streak_stats_lib::{github_client::GitHubClient, types::Stats};
 use jiff::{civil::Weekday, fmt::strtime::parse, Span, Zoned};
 use term_table::{
@@ -9,7 +9,7 @@ use term_table::{
     TableBuilder, TableStyle,
 };
 
-use crate::args::{Args, Theme};
+use crate::args::Args;
 
 mod args;
 
@@ -62,24 +62,6 @@ fn main() -> Result<()> {
         .build()])];
 
     if !no_display_matrix {
-        let palette = match theme {
-            Theme::Dark => [
-                RGB::new(22, 27, 34),
-                RGB::new(14, 68, 41),
-                RGB::new(0, 109, 50),
-                RGB::new(38, 166, 65),
-                RGB::new(57, 211, 83),
-            ],
-            Theme::Light => [
-                RGB::new(235, 237, 240),
-                RGB::new(155, 233, 168),
-                RGB::new(64, 196, 99),
-                RGB::new(48, 161, 78),
-                RGB::new(33, 110, 57),
-            ],
-            _ => unreachable!("Invalid theme"),
-        };
-
         // find max contribution count
         let max = contributions.iter().map(|day| day.contribution_count).max().unwrap();
 
@@ -93,11 +75,11 @@ fn main() -> Result<()> {
 
                 "\u{25A0}"
                     .color(match contribution.contribution_count as f64 / max as f64 {
-                        0.0 => palette[0],
-                        0.0..=0.25 => palette[1],
-                        0.25..=0.5 => palette[2],
-                        0.5..=0.75 => palette[3],
-                        _ => palette[4],
+                        0.0 => theme.as_ref()[0],
+                        0.0..=0.25 => theme.as_ref()[1],
+                        0.25..=0.5 => theme.as_ref()[2],
+                        0.5..=0.75 => theme.as_ref()[3],
+                        _ => theme.as_ref()[4],
                     })
                     .to_string()
             })
