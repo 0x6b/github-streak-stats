@@ -13,7 +13,8 @@ use crate::args::Args;
 
 mod args;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let Args {
         login,
         github_token,
@@ -36,15 +37,17 @@ fn main() -> Result<()> {
     );
 
     let user = match &login {
-        None => client.get_viewer()?,
-        Some(login) => client.get_user(login)?,
+        None => client.get_viewer().await?,
+        Some(login) => client.get_user(login).await?,
     };
 
-    let contributions = client.get_contributions(
-        &user,
-        &start.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
-        &end.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
-    )?;
+    let contributions = client
+        .get_contributions(
+            &user,
+            &start.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
+            &end.strftime("%Y-%m-%dT%H:%M:%S.000%z").to_string(),
+        )
+        .await?;
 
     let Stats {
         total_contributions,
