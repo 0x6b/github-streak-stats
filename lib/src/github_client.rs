@@ -1,11 +1,11 @@
 use std::env;
 
 use anyhow::{anyhow, Result};
-use graphql_client::{reqwest::post_graphql_blocking, GraphQLQuery, Response};
+use graphql_client::{reqwest::post_graphql, GraphQLQuery, Response};
 use jiff::{civil::Date, fmt::strtime::parse, Span};
 use reqwest::{
-    blocking::Client,
     header::{HeaderValue, AUTHORIZATION},
+    Client,
 };
 
 use crate::types::{
@@ -54,8 +54,8 @@ impl GitHubClient {
     }
 
     /// Calculate streak stats for a given user
-    pub fn calc_streak(&self, login: &User, from: &str, to: &str) -> Result<Stats> {
-        let contribution_days = self.get_contributions(login, from, to)?;
+    pub async fn calc_streak(&self, login: &User, from: &str, to: &str) -> Result<Stats> {
+        let contribution_days = self.get_contributions(login, from, to).await?;
         self.calc_streak_from_contributions(&contribution_days)
     }
 
@@ -95,17 +95,19 @@ impl GitHubClient {
     }
 
     /// Get contributions for a given user
-    pub fn get_contributions(
+    pub async fn get_contributions(
         &self,
         user: &User,
         from: &str,
         to: &str,
     ) -> Result<Vec<Contribution>> {
-        let response = self.request::<StreakQuery>(streak_query::Variables {
-            login: user.name.to_string(),
-            from: Some(from.to_string()),
-            to: Some(to.to_string()),
-        })?;
+        let response = self
+            .request::<StreakQuery>(streak_query::Variables {
+                login: user.name.to_string(),
+                from: Some(from.to_string()),
+                to: Some(to.to_string()),
+            })
+            .await?;
 
         let contribution_days = response
             .data
@@ -130,9 +132,10 @@ impl GitHubClient {
         Ok(contribution_days)
     }
 
-    pub fn get_user(&self, login: &str) -> Result<User> {
+    pub async fn get_user(&self, login: &str) -> Result<User> {
         let response = self
-            .request::<UserQuery>(user_query::Variables { login: login.to_string() })?
+            .request::<UserQuery>(user_query::Variables { login: login.to_string() })
+            .await?
             .data
             .ok_or(anyhow!("No login information. Check your GitHub API token."))?
             .user
@@ -144,9 +147,10 @@ impl GitHubClient {
     }
 
     /// Get login name of the GitHub API token owner
-    pub fn get_viewer(&self) -> Result<User> {
+    pub async fn get_viewer(&self) -> Result<User> {
         let response = self
-            .request::<ViewerQuery>(viewer_query::Variables {})?
+            .request::<ViewerQuery>(viewer_query::Variables {})
+            .await?
             .data
             .ok_or(anyhow!("No login information. Check your GitHub API token."))?;
         let login = response.viewer.login;
@@ -155,11 +159,11 @@ impl GitHubClient {
     }
 
     // Simple helper function to make a request
-    fn request<T: GraphQLQuery>(
+    async fn request<T: GraphQLQuery>(
         &self,
         variables: T::Variables,
     ) -> Result<Response<T::ResponseData>> {
-        Ok(post_graphql_blocking::<T, _>(&self.client, &self.endpoint, variables)?)
+        Ok(post_graphql::<T, _>(&self.client, &self.endpoint, variables).await?)
     }
 }
 
@@ -167,10 +171,10 @@ impl GitHubClient {
 mod test {
     use crate::github_client::GitHubClient;
 
-    #[test]
-    fn get_viewer() {
+    #[tokio::test]
+    async fn get_viewer() {
         let client = GitHubClient::default();
-        let user = client.get_viewer().unwrap();
+        let user = client.get_viewer().await.unwrap();
         println!("{user}");
     }
 }
